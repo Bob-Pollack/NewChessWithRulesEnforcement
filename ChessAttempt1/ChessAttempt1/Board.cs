@@ -15,6 +15,7 @@ namespace ChessAttempt1
         public string winMessage { get; set;}
         public bool whiteInCheck { get; set; }
         public bool blackInCheck { get; set; }
+        public List<Move> MoveList { get; set; }
         //probably need to store the last move here for the sake of en passant rules 
         //may be better to have it be a full list of moves to be used as a log
         //not entirely sure how to do the repeat position check but we'll get there later
@@ -30,6 +31,7 @@ namespace ChessAttempt1
             winMessage = "Test code this should never show up";
             whiteInCheck = false;
             blackInCheck = false;
+            MoveList = new List<Move>();
         }
 
         internal void fillBoard(int whiteArmy, int blackArmy)

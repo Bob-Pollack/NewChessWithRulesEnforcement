@@ -141,8 +141,8 @@ namespace ChessAttempt1
                 outputSquareNumber = 8 * (8 - outputRowNumber) + outputColumnNumber - 1;
 
                 //test code
-                Console.WriteLine("moving from " + inputSquareNumber + "to " + outputSquareNumber);
-                Console.ReadLine();
+                //Console.WriteLine("moving from " + inputSquareNumber + "to " + outputSquareNumber);
+                //Console.ReadLine();
 
                 Square s1 = inputBoard.BoardSquares[inputSquareNumber];
                 Square s2 = inputBoard.BoardSquares[outputSquareNumber];
@@ -156,24 +156,68 @@ namespace ChessAttempt1
                     }
                     else if (inputBoard.isWhiteTurn == s1.occupyingPiece.isWhitePiece)
                     {
-                        bool legalMove = checkLegalMove(inputBoard, inputSquareNumber, outputSquareNumber);
+                        bool legalMove = CheckLegalMove(inputBoard, inputSquareNumber, outputSquareNumber);
 
                         if (legalMove)
                         {
-                            //check if allied king is in check here
-                            //any code related to pieces that were just removed goes here**************
+                            //this code is to confirm that the last move did NOT put the player's king in check.
+                            //********THIS IS CURRENTLY NOT WORKING AS EXPECTED
+                            //need to make a clone of the input board rather than a new reference to the old one...
+                            //instead going creating a move object, the board will have a list.  
+                            //this will allow us to use the last move to undo moves that put/leave own king in check.
+                            Board afterMove = inputBoard;
 
-                            inputBoard.BoardSquares[outputSquareNumber].occupyingPiece = s1.occupyingPiece;
-                            inputBoard.BoardSquares[outputSquareNumber].hasPiece = true;
-                            inputBoard.BoardSquares[outputSquareNumber].occupyingPiece.hasMoved = true;
-                            inputBoard.BoardSquares[inputSquareNumber].hasPiece = false;
+                            afterMove.BoardSquares[outputSquareNumber].occupyingPiece = s1.occupyingPiece;
+                            afterMove.BoardSquares[outputSquareNumber].hasPiece = true;
+                            afterMove.BoardSquares[outputSquareNumber].occupyingPiece.hasMoved = true;
+                            afterMove.BoardSquares[inputSquareNumber].hasPiece = false;
+                            //special rules for castling move here?
 
-                            inputBoard.isWhiteTurn = !inputBoard.isWhiteTurn;
+                            bool didIJustPutMyOwnKingInCheck = IsKingInCheck(afterMove, afterMove.isWhiteTurn);
+                            bool didIJustCheckTheOpposingKing = IsKingInCheck(afterMove, !afterMove.isWhiteTurn);
 
-                            Console.Clear();
-                            Console.WriteLine($"moved {s1.occupyingPiece.pieceSymbol} from {s1.file}{s1.rank} to { s2.file}{ s2.rank}");
-                            DrawBoard(inputBoard);
-                            turnInProgress = false;
+                            if (didIJustPutMyOwnKingInCheck == false)
+                            {
+                                //any code related to pieces that were just removed goes here
+
+
+                                if (inputBoard.isWhiteTurn)
+                                {
+                                    inputBoard.whiteInCheck = false;
+                                    if(didIJustCheckTheOpposingKing)
+                                    {
+                                        inputBoard.blackInCheck = true;
+                                    }
+                                }
+                                else
+                                {
+                                    inputBoard.blackInCheck = false;
+                                    if (didIJustCheckTheOpposingKing)
+                                    {
+                                        inputBoard.whiteInCheck = true;
+                                    }
+                                }
+                                inputBoard.BoardSquares[outputSquareNumber].occupyingPiece = s1.occupyingPiece;
+                                inputBoard.BoardSquares[outputSquareNumber].hasPiece = true;
+                                inputBoard.BoardSquares[outputSquareNumber].occupyingPiece.hasMoved = true;
+                                inputBoard.BoardSquares[inputSquareNumber].hasPiece = false;
+                                //special rules for castling move here?
+
+                                inputBoard.isWhiteTurn = !inputBoard.isWhiteTurn;
+
+                                Console.Clear();
+                                Console.WriteLine($"moved {s1.occupyingPiece.pieceSymbol} from {s1.file}{s1.rank} to { s2.file}{ s2.rank}");
+                                DrawBoard(inputBoard);
+                                turnInProgress = false;
+                            }
+                            else
+                            {
+                                Console.Clear();
+                                Console.WriteLine($"{s1.occupyingPiece.pieceSymbol} cannot move from {s1.file}{s1.rank} to { s2.file}{ s2.rank} " +
+                                    $"because the king will be in check");
+                                DrawBoard(inputBoard);
+                            }
+
                         }
                         else
                         {
@@ -198,6 +242,8 @@ namespace ChessAttempt1
                 }
             }
         }
+
+
 
         private static void DrawBoard(Board inputBoard)
         {
@@ -251,7 +297,7 @@ namespace ChessAttempt1
         //and that it matches the color of the player who is on turn.
 
         //may modify this to return WHY the move isn't legal, currently just a bool
-        private static bool checkLegalMove(Board inputBoard, int startingSquare, int targetSquare)
+        private static bool CheckLegalMove(Board inputBoard, int startingSquare, int targetSquare)
         {
             //starting wtih classic army, may expand to chess 2 later.
             if (inputBoard.BoardSquares[startingSquare].occupyingPiece.army == "classic")
@@ -287,8 +333,8 @@ namespace ChessAttempt1
                                 squaresToMove--;
                                 int squareToCheck = startingSquare - squaresToMove;
 
-                                Console.WriteLine("checking square" + squareToCheck);
-                                Console.ReadLine();
+                                //Console.WriteLine("checking square" + squareToCheck);
+                                //Console.ReadLine();
                                 //need to check this line in the if statement
                                 if (inputBoard.BoardSquares[squareToCheck].hasPiece)
                                 {
@@ -304,8 +350,8 @@ namespace ChessAttempt1
                                 squaresToMove++;
                                 int squareToCheck = startingSquare - squaresToMove;
 
-                                Console.WriteLine("checking square" + squareToCheck);
-                                Console.ReadLine();
+                                //Console.WriteLine("checking square" + squareToCheck);
+                                //Console.ReadLine();
                                 //need to check this line in the if statement
                                 if (inputBoard.BoardSquares[squareToCheck].hasPiece)
                                 {
@@ -330,8 +376,8 @@ namespace ChessAttempt1
                                 squaresToMove--;
                                 int squareToCheck = startingSquare - (8 * squaresToMove);
 
-                                Console.WriteLine("checking square" + squareToCheck);
-                                Console.ReadLine();
+                                //Console.WriteLine("checking square" + squareToCheck);
+                                //Console.ReadLine();
                                 //need to check this line in the if statement
                                 if (inputBoard.BoardSquares[squareToCheck].hasPiece)
                                 {
@@ -347,8 +393,8 @@ namespace ChessAttempt1
                                 squaresToMove++;
                                 int squareToCheck = startingSquare - (8 * squaresToMove);
 
-                                Console.WriteLine("checking square" + squareToCheck);
-                                Console.ReadLine();
+                                //Console.WriteLine("checking square" + squareToCheck);
+                                //Console.ReadLine();
                                 //need to check this line in the if statement
                                 if (inputBoard.BoardSquares[squareToCheck].hasPiece)
                                 {
@@ -694,8 +740,6 @@ namespace ChessAttempt1
                                 squaresToMove--;
                                 int squareToCheck = startingSquare - squaresToMove;
 
-                                Console.WriteLine("checking square" + squareToCheck);
-                                Console.ReadLine();
                                 //need to check this line in the if statement
                                 if (inputBoard.BoardSquares[squareToCheck].hasPiece)
                                 {
@@ -711,8 +755,6 @@ namespace ChessAttempt1
                                 squaresToMove++;
                                 int squareToCheck = startingSquare - squaresToMove;
 
-                                Console.WriteLine("checking square" + squareToCheck);
-                                Console.ReadLine();
                                 //need to check this line in the if statement
                                 if (inputBoard.BoardSquares[squareToCheck].hasPiece)
                                 {
@@ -737,8 +779,6 @@ namespace ChessAttempt1
                                 squaresToMove--;
                                 int squareToCheck = startingSquare - (8 * squaresToMove);
 
-                                Console.WriteLine("checking square" + squareToCheck);
-                                Console.ReadLine();
                                 //need to check this line in the if statement
                                 if (inputBoard.BoardSquares[squareToCheck].hasPiece)
                                 {
@@ -754,8 +794,7 @@ namespace ChessAttempt1
                                 squaresToMove++;
                                 int squareToCheck = startingSquare - (8 * squaresToMove);
 
-                                Console.WriteLine("checking square" + squareToCheck);
-                                Console.ReadLine();
+
                                 //need to check this line in the if statement
                                 if (inputBoard.BoardSquares[squareToCheck].hasPiece)
                                 {
@@ -920,6 +959,48 @@ namespace ChessAttempt1
 
 
             return false; ;
+        }
+
+        private static bool IsKingInCheck(Board inputBoard, bool isWhiteKing)
+        {
+            //find square of king of proper color on board
+            int kingSquare = -1;
+            for(int i = 0; i <= 63; i++)
+            {
+                if(inputBoard.BoardSquares[i].hasPiece)
+                {
+                    if (inputBoard.BoardSquares[i].occupyingPiece.isWhitePiece == isWhiteKing
+                        && inputBoard.BoardSquares[i].occupyingPiece.pieceName == "king")
+                    {
+                        kingSquare = i;
+                    }
+                }
+
+            }
+            if(kingSquare == -1)
+            {
+                return false;
+            }
+            //check every square on the board.  if it has a piece of the opposite color,
+            //then check if that piece can make a legal move to the location of the king.
+            for (int i = 0; i < 63; i++)
+            {
+                if (inputBoard.BoardSquares[i].hasPiece)
+                {
+                    if (inputBoard.BoardSquares[i].occupyingPiece.isWhitePiece != isWhiteKing)
+                    {
+                        if (CheckLegalMove(inputBoard, i, kingSquare) == true)
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+
+
+
+            return false;
+            
         }
     }
 }

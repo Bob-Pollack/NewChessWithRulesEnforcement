@@ -7,3 +7,12 @@ c:\users\x1372\documents\visual studio 2017\Projects\ChessAttempt1\ChessAttempt1
 c:\users\x1372\documents\visual studio 2017\Projects\ChessAttempt1\ChessAttempt1\obj\Debug\netcoreapp1.1\ChessAttempt1.AssemblyInfo.cs
 c:\users\x1372\documents\visual studio 2017\Projects\ChessAttempt1\ChessAttempt1\obj\Debug\netcoreapp1.1\ChessAttempt1.dll
 c:\users\x1372\documents\visual studio 2017\Projects\ChessAttempt1\ChessAttempt1\obj\Debug\netcoreapp1.1\ChessAttempt1.pdb
+C:\Users\x1372\Desktop\2017_Chess\ChessAttempt1\ChessAttempt1\bin\Debug\netcoreapp1.1\ChessAttempt1.deps.json
+C:\Users\x1372\Desktop\2017_Chess\ChessAttempt1\ChessAttempt1\bin\Debug\netcoreapp1.1\ChessAttempt1.runtimeconfig.json
+C:\Users\x1372\Desktop\2017_Chess\ChessAttempt1\ChessAttempt1\bin\Debug\netcoreapp1.1\ChessAttempt1.runtimeconfig.dev.json
+C:\Users\x1372\Desktop\2017_Chess\ChessAttempt1\ChessAttempt1\bin\Debug\netcoreapp1.1\ChessAttempt1.dll
+C:\Users\x1372\Desktop\2017_Chess\ChessAttempt1\ChessAttempt1\bin\Debug\netcoreapp1.1\ChessAttempt1.pdb
+C:\Users\x1372\Desktop\2017_Chess\ChessAttempt1\ChessAttempt1\obj\Debug\netcoreapp1.1\ChessAttempt1.csprojResolveAssemblyReference.cache
+C:\Users\x1372\Desktop\2017_Chess\ChessAttempt1\ChessAttempt1\obj\Debug\netcoreapp1.1\ChessAttempt1.AssemblyInfo.cs
+C:\Users\x1372\Desktop\2017_Chess\ChessAttempt1\ChessAttempt1\obj\Debug\netcoreapp1.1\ChessAttempt1.dll
+C:\Users\x1372\Desktop\2017_Chess\ChessAttempt1\ChessAttempt1\obj\Debug\netcoreapp1.1\ChessAttempt1.pdb

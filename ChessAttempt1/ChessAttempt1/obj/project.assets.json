@@ -7042,10 +7042,10 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\x1372\\documents\\visual studio 2017\\Projects\\ChessAttempt1\\ChessAttempt1\\ChessAttempt1.csproj",
+      "projectUniqueName": "C:\\Users\\x1372\\Desktop\\2017_Chess\\ChessAttempt1\\ChessAttempt1\\ChessAttempt1.csproj",
       "projectName": "ChessAttempt1",
-      "projectPath": "C:\\Users\\x1372\\documents\\visual studio 2017\\Projects\\ChessAttempt1\\ChessAttempt1\\ChessAttempt1.csproj",
-      "outputPath": "C:\\Users\\x1372\\documents\\visual studio 2017\\Projects\\ChessAttempt1\\ChessAttempt1\\obj\\",
+      "projectPath": "C:\\Users\\x1372\\Desktop\\2017_Chess\\ChessAttempt1\\ChessAttempt1\\ChessAttempt1.csproj",
+      "outputPath": "C:\\Users\\x1372\\Desktop\\2017_Chess\\ChessAttempt1\\ChessAttempt1\\obj\\",
       "projectStyle": "PackageReference",
       "originalTargetFrameworks": [
         "netcoreapp1.1"
