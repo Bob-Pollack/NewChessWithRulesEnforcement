@@ -165,16 +165,30 @@ namespace ChessAttempt1
                             //need to make a clone of the input board rather than a new reference to the old one...
                             //instead going creating a move object, the board will have a list.  
                             //this will allow us to use the last move to undo moves that put/leave own king in check.
-                            Board afterMove = inputBoard;
+                            Move newMove = new Move();
+                            newMove.StartingSquare = inputSquareNumber;
+                            newMove.TargetSquare = outputSquareNumber;
+                            newMove.MovingPiece = s1.occupyingPiece;
+                            newMove.WasTargetSquareEmpty = s2.hasPiece;
+                            if (s2.hasPiece)
+                            {
+                                newMove.CapturedPiece = s2.occupyingPiece;
+                            }
+                            newMove.StartingRank = s1.rank;
+                            newMove.StartingFile = s1.file;
+                            newMove.TargetRank = s2.rank;
+                            newMove.TargetFile = s2.file;
+                            newMove.HasThisPieceMovedBefore = inputBoard.BoardSquares[inputSquareNumber].occupyingPiece.hasMoved;
 
-                            afterMove.BoardSquares[outputSquareNumber].occupyingPiece = s1.occupyingPiece;
-                            afterMove.BoardSquares[outputSquareNumber].hasPiece = true;
-                            afterMove.BoardSquares[outputSquareNumber].occupyingPiece.hasMoved = true;
-                            afterMove.BoardSquares[inputSquareNumber].hasPiece = false;
+
+                            inputBoard.BoardSquares[outputSquareNumber].occupyingPiece = s1.occupyingPiece;
+                            inputBoard.BoardSquares[outputSquareNumber].hasPiece = true;
+                            inputBoard.BoardSquares[outputSquareNumber].occupyingPiece.hasMoved = true;
+                            inputBoard.BoardSquares[inputSquareNumber].hasPiece = false;
                             //special rules for castling move here?
 
-                            bool didIJustPutMyOwnKingInCheck = IsKingInCheck(afterMove, afterMove.isWhiteTurn);
-                            bool didIJustCheckTheOpposingKing = IsKingInCheck(afterMove, !afterMove.isWhiteTurn);
+                            bool didIJustPutMyOwnKingInCheck = IsKingInCheck(inputBoard, inputBoard.isWhiteTurn);
+                            bool didIJustCheckTheOpposingKing = IsKingInCheck(inputBoard, !inputBoard.isWhiteTurn);
 
                             if (didIJustPutMyOwnKingInCheck == false)
                             {
@@ -197,13 +211,9 @@ namespace ChessAttempt1
                                         inputBoard.whiteInCheck = true;
                                     }
                                 }
-                                inputBoard.BoardSquares[outputSquareNumber].occupyingPiece = s1.occupyingPiece;
-                                inputBoard.BoardSquares[outputSquareNumber].hasPiece = true;
-                                inputBoard.BoardSquares[outputSquareNumber].occupyingPiece.hasMoved = true;
-                                inputBoard.BoardSquares[inputSquareNumber].hasPiece = false;
-                                //special rules for castling move here?
 
                                 inputBoard.isWhiteTurn = !inputBoard.isWhiteTurn;
+                                inputBoard.MoveList.Add(newMove);
 
                                 Console.Clear();
                                 Console.WriteLine($"moved {s1.occupyingPiece.pieceSymbol} from {s1.file}{s1.rank} to { s2.file}{ s2.rank}");
@@ -212,6 +222,22 @@ namespace ChessAttempt1
                             }
                             else
                             {
+                                //use the move object to undo the change
+                                //inputBoard.BoardSquares[outputSquareNumber].occupyingPiece = s1.occupyingPiece;
+                                //inputBoard.BoardSquares[outputSquareNumber].hasPiece = true;
+                                //inputBoard.BoardSquares[outputSquareNumber].occupyingPiece.hasMoved = true;
+                                //inputBoard.BoardSquares[inputSquareNumber].hasPiece = false;
+                                inputBoard.BoardSquares[newMove.StartingSquare].hasPiece = true;
+                                newMove.MovingPiece.hasMoved = newMove.HasThisPieceMovedBefore;
+                                inputBoard.BoardSquares[newMove.StartingSquare].occupyingPiece = newMove.MovingPiece;
+                                inputBoard.BoardSquares[newMove.TargetSquare].hasPiece = newMove.WasTargetSquareEmpty;
+                                if (!newMove.WasTargetSquareEmpty)
+                                {
+                                    inputBoard.BoardSquares[newMove.TargetSquare].occupyingPiece = newMove.CapturedPiece;
+                                }
+
+
+
                                 Console.Clear();
                                 Console.WriteLine($"{s1.occupyingPiece.pieceSymbol} cannot move from {s1.file}{s1.rank} to { s2.file}{ s2.rank} " +
                                     $"because the king will be in check");
