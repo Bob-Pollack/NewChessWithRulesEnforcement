@@ -7,94 +7,95 @@ namespace ChessAttempt1
     class Piece
     {
         //piece name
-        public string pieceName { get; private set; }
+        public string PieceName { get; private set; }
 
         //piece symbol
-        public char pieceSymbol { get; private set; }
+        public char PieceSymbol { get; private set; }
 
         //determine the color
-        public bool isWhitePiece { get; private set; }
+        public bool IsWhitePiece { get; private set; }
 
         //possibility for expanding past standard chess armies
-        public string army { get; private set; }
+        public string Army { get; private set; }
 
         //has this piece moved?  relevant for pawns, castling
-        public bool hasMoved { get;  set; }
+        public bool HasMoved { get;  set; }
 
+        //this one seems to have been rendered redundant, leaving in for now
         //determine if piece is threatening the opposing king on the current board... may nto be used here
-        public  bool threatensKing { get; private set; }
+        public  bool ThreatensKing { get; private set; }
 
         //piece rank, if used.  pawn = 1, bishop/knight = 3, rook = 5, queen = 9, king = 200
-        public int pieceRank { get; private set; }
+        public int PieceRank { get; private set; }
 
-        public void addPiece(string piece, string armyName, bool isWhite)
+        public void AddPiece(string piece, string armyName, bool isWhite)
         {
-            army = armyName;
-            threatensKing = false;
-            isWhitePiece = isWhite;
-            pieceName = piece;
-            hasMoved = false;
+            Army = armyName;
+            ThreatensKing = false;
+            IsWhitePiece = isWhite;
+            PieceName = piece;
+            HasMoved = false;
             //unicode does NOT look good in console window, will update later
-            if (pieceName == "pawn" && isWhitePiece)
+            if (PieceName == "pawn" && IsWhitePiece)
             {
                 //pieceSymbol = '\u265f';
-                pieceSymbol = '♟';
-                pieceRank = 1;
+                PieceSymbol = '♟';
+                PieceRank = 1;
             }
-            else if (pieceName == "pawn" && isWhitePiece == false)
+            else if (PieceName == "pawn" && IsWhitePiece == false)
             {
-                pieceSymbol = '♙';
-                pieceRank = 1;
+                PieceSymbol = '♙';
+                PieceRank = 1;
             }
-            else if (pieceName == "knight" && isWhitePiece)
+            else if (PieceName == "knight" && IsWhitePiece)
             {
-                pieceSymbol = '♞';
-                pieceRank = 3;
+                PieceSymbol = '♞';
+                PieceRank = 3;
             }
-            else if (pieceName == "knight" && isWhitePiece == false)
+            else if (PieceName == "knight" && IsWhitePiece == false)
             {
-                pieceSymbol = '♘';
-                pieceRank = 3;
+                PieceSymbol = '♘';
+                PieceRank = 3;
             }
-            else if (pieceName == "bishop" && isWhitePiece)
+            else if (PieceName == "bishop" && IsWhitePiece)
             {
-                pieceSymbol = '♝';
-                pieceRank = 3;
+                PieceSymbol = '♝';
+                PieceRank = 3;
             }
-            else if (pieceName == "bishop" && isWhitePiece == false)
+            else if (PieceName == "bishop" && IsWhitePiece == false)
             {
-                pieceSymbol = '♗';
-                pieceRank = 3;
+                PieceSymbol = '♗';
+                PieceRank = 3;
             }
-            else if (pieceName == "rook" && isWhitePiece)
+            else if (PieceName == "rook" && IsWhitePiece)
             {
-                pieceSymbol = '♜';
-                pieceRank = 5;
+                PieceSymbol = '♜';
+                PieceRank = 5;
             }
-            else if (pieceName == "rook" && isWhitePiece == false)
+            else if (PieceName == "rook" && IsWhitePiece == false)
             {
-                pieceSymbol = '♖';
-                pieceRank = 5;
+                PieceSymbol = '♖';
+                PieceRank = 5;
             }
-            else if (pieceName == "queen" && isWhitePiece)
+            else if (PieceName == "queen" && IsWhitePiece)
             {
-                pieceSymbol = '♛';
-                pieceRank = 9;
+                PieceSymbol = '♛';
+                PieceRank = 9;
             }
-            else if (pieceName == "queen" && isWhitePiece == false)
+            else if (PieceName == "queen" && IsWhitePiece == false)
             {
-                pieceSymbol = '♕';
-                pieceRank = 9;
+                PieceSymbol = '♕';
+                PieceRank = 9;
             }
-            else if (pieceName == "king" && isWhitePiece)
+            else if (PieceName == "king" && IsWhitePiece)
             {
-                pieceSymbol = '♚';
-                pieceRank = 200;
+                PieceSymbol = '♚';
+                PieceRank = 200;
             }
-            else if (pieceName == "king" && isWhitePiece == false)
+            else if (PieceName == "king" && IsWhitePiece == false)
             {
-                pieceSymbol = '♔';
-                pieceRank = 200;
+                PieceSymbol = '♔';
+                PieceRank = 200;
             }
         }
     }

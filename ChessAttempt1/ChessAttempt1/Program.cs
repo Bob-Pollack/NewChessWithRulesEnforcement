@@ -118,8 +118,16 @@ namespace ChessAttempt1
                             break;
                     }
 
-
-                    if (inputColumnNumber != 0 && outputColumnNumber != 0
+                    if (inputRow == "log")
+                    {
+                        Console.Clear();
+                        ShowLog(inputBoard);
+                        Console.ReadLine();
+                        Console.Clear();
+                        Console.WriteLine("Resuming game");
+                        DrawBoard(inputBoard);
+                    }
+                    else if (inputColumnNumber != 0 && outputColumnNumber != 0
                         && inputRowNumber != 0 && outputRowNumber != 0)
                     {
                         goodInput = true;
@@ -154,7 +162,7 @@ namespace ChessAttempt1
                         Console.WriteLine("Cannot skip a turn");
                         DrawBoard(inputBoard);
                     }
-                    else if (inputBoard.isWhiteTurn == s1.occupyingPiece.isWhitePiece)
+                    else if (inputBoard.isWhiteTurn == s1.occupyingPiece.IsWhitePiece)
                     {
                         bool legalMove = CheckLegalMove(inputBoard, inputSquareNumber, outputSquareNumber);
 
@@ -169,7 +177,7 @@ namespace ChessAttempt1
                             newMove.StartingSquare = inputSquareNumber;
                             newMove.TargetSquare = outputSquareNumber;
                             newMove.MovingPiece = s1.occupyingPiece;
-                            newMove.WasTargetSquareEmpty = s2.hasPiece;
+                            newMove.WasTargetSquareEmpty = !s2.hasPiece;
                             if (s2.hasPiece)
                             {
                                 newMove.CapturedPiece = s2.occupyingPiece;
@@ -178,17 +186,20 @@ namespace ChessAttempt1
                             newMove.StartingFile = s1.file;
                             newMove.TargetRank = s2.rank;
                             newMove.TargetFile = s2.file;
-                            newMove.HasThisPieceMovedBefore = inputBoard.BoardSquares[inputSquareNumber].occupyingPiece.hasMoved;
+                            newMove.HasThisPieceMovedBefore = inputBoard.BoardSquares[inputSquareNumber].occupyingPiece.HasMoved;
 
 
                             inputBoard.BoardSquares[outputSquareNumber].occupyingPiece = s1.occupyingPiece;
                             inputBoard.BoardSquares[outputSquareNumber].hasPiece = true;
-                            inputBoard.BoardSquares[outputSquareNumber].occupyingPiece.hasMoved = true;
+                            inputBoard.BoardSquares[outputSquareNumber].occupyingPiece.HasMoved = true;
                             inputBoard.BoardSquares[inputSquareNumber].hasPiece = false;
                             //special rules for castling move here?
 
                             bool didIJustPutMyOwnKingInCheck = IsKingInCheck(inputBoard, inputBoard.isWhiteTurn);
                             bool didIJustCheckTheOpposingKing = IsKingInCheck(inputBoard, !inputBoard.isWhiteTurn);
+
+
+                            newMove.Check = didIJustCheckTheOpposingKing;
 
                             if (didIJustPutMyOwnKingInCheck == false)
                             {
@@ -216,7 +227,7 @@ namespace ChessAttempt1
                                 inputBoard.MoveList.Add(newMove);
 
                                 Console.Clear();
-                                Console.WriteLine($"moved {s1.occupyingPiece.pieceSymbol} from {s1.file}{s1.rank} to { s2.file}{ s2.rank}");
+                                Console.WriteLine($"moved {s1.occupyingPiece.PieceSymbol} from {s1.file}{s1.rank} to { s2.file}{ s2.rank}");
                                 DrawBoard(inputBoard);
                                 turnInProgress = false;
                             }
@@ -228,9 +239,9 @@ namespace ChessAttempt1
                                 //inputBoard.BoardSquares[outputSquareNumber].occupyingPiece.hasMoved = true;
                                 //inputBoard.BoardSquares[inputSquareNumber].hasPiece = false;
                                 inputBoard.BoardSquares[newMove.StartingSquare].hasPiece = true;
-                                newMove.MovingPiece.hasMoved = newMove.HasThisPieceMovedBefore;
+                                newMove.MovingPiece.HasMoved = newMove.HasThisPieceMovedBefore;
                                 inputBoard.BoardSquares[newMove.StartingSquare].occupyingPiece = newMove.MovingPiece;
-                                inputBoard.BoardSquares[newMove.TargetSquare].hasPiece = newMove.WasTargetSquareEmpty;
+                                inputBoard.BoardSquares[newMove.TargetSquare].hasPiece = !newMove.WasTargetSquareEmpty;
                                 if (!newMove.WasTargetSquareEmpty)
                                 {
                                     inputBoard.BoardSquares[newMove.TargetSquare].occupyingPiece = newMove.CapturedPiece;
@@ -239,7 +250,7 @@ namespace ChessAttempt1
 
 
                                 Console.Clear();
-                                Console.WriteLine($"{s1.occupyingPiece.pieceSymbol} cannot move from {s1.file}{s1.rank} to { s2.file}{ s2.rank} " +
+                                Console.WriteLine($"{s1.occupyingPiece.PieceSymbol} cannot move from {s1.file}{s1.rank} to { s2.file}{ s2.rank} " +
                                     $"because the king will be in check");
                                 DrawBoard(inputBoard);
                             }
@@ -248,7 +259,7 @@ namespace ChessAttempt1
                         else
                         {
                             Console.Clear();
-                            Console.WriteLine($"{s1.occupyingPiece.pieceSymbol} cannot move from {s1.file}{s1.rank} to { s2.file}{ s2.rank} ");
+                            Console.WriteLine($"{s1.occupyingPiece.PieceSymbol} cannot move from {s1.file}{s1.rank} to { s2.file}{ s2.rank} ");
                             DrawBoard(inputBoard);
                         }
                     }
@@ -269,7 +280,34 @@ namespace ChessAttempt1
             }
         }
 
+        private static void ShowLog(Board inputBoard)
+        {            
+            Console.WriteLine("Game Log");
+            if (inputBoard.MoveList.Count == 0)
+            {
+                Console.WriteLine("No moves have yet been played");
+            }
 
+            for ( int i = 0; i < inputBoard.MoveList.Count; i++ )
+            {
+                string causingCheck = "";
+                if (inputBoard.MoveList[i].Check)
+                {
+                    causingCheck = ", check";
+                }
+                string capturingPiece = "";
+                if ( inputBoard.MoveList[i].WasTargetSquareEmpty == false )
+                {
+                    capturingPiece = $" capturing {inputBoard.MoveList[i].CapturedPiece.PieceSymbol}";
+                }
+                Console.WriteLine($"{inputBoard.MoveList[i].MovingPiece.PieceSymbol} {inputBoard.MoveList[i].StartingFile}{inputBoard.MoveList[i].StartingRank}" +
+                    $" to {inputBoard.MoveList[i].TargetFile}{inputBoard.MoveList[i].TargetRank}" +
+                    $"{capturingPiece}{causingCheck}.");
+            }
+
+            Console.WriteLine("Press enter to continue");
+
+        }
 
         private static void DrawBoard(Board inputBoard)
         {
@@ -307,7 +345,7 @@ namespace ChessAttempt1
 
                 if (s.hasPiece)
                 {
-                    Console.Write(s.occupyingPiece.pieceSymbol);
+                    Console.Write(s.occupyingPiece.PieceSymbol);
                 }
                 else
                 {
@@ -326,12 +364,12 @@ namespace ChessAttempt1
         private static bool CheckLegalMove(Board inputBoard, int startingSquare, int targetSquare)
         {
             //starting wtih classic army, may expand to chess 2 later.
-            if (inputBoard.BoardSquares[startingSquare].occupyingPiece.army == "classic")
+            if (inputBoard.BoardSquares[startingSquare].occupyingPiece.Army == "classic")
             {
                 //no classic piece can capture another piece of the same army and color
                 if (inputBoard.BoardSquares[targetSquare].hasPiece == true &&
-                    (inputBoard.BoardSquares[startingSquare].occupyingPiece.isWhitePiece ==
-                    inputBoard.BoardSquares[targetSquare].occupyingPiece.isWhitePiece))
+                    (inputBoard.BoardSquares[startingSquare].occupyingPiece.IsWhitePiece ==
+                    inputBoard.BoardSquares[targetSquare].occupyingPiece.IsWhitePiece))
                 {
                     //removed for testing purposes temporarily
                     //return false;
@@ -342,7 +380,7 @@ namespace ChessAttempt1
                 //cannot jump pieces
                 //cannot capture allied pieces
                 //can capture enemy pieces
-                if (inputBoard.BoardSquares[startingSquare].occupyingPiece.pieceName == "rook")
+                if (inputBoard.BoardSquares[startingSquare].occupyingPiece.PieceName == "rook")
                 {
                     //organizing this using the row and column of the board square.  11 = top left corner, 88 = bottom right
 
@@ -464,15 +502,15 @@ namespace ChessAttempt1
                 //can move forward diagonally left or right if and only if the target square is occupied
                 //special rule for capturing diagonally IMMEDIATELY after opponent moves two spaces (en passant) NOT IMPLEMENTED
                 //special rule for promotion of reaching final rank NOT IMPLEMENTED
-                if (inputBoard.BoardSquares[startingSquare].occupyingPiece.pieceName == "pawn")
+                if (inputBoard.BoardSquares[startingSquare].occupyingPiece.PieceName == "pawn")
                 {
                     //check for white vs black
-                    if (inputBoard.BoardSquares[startingSquare].occupyingPiece.isWhitePiece)
+                    if (inputBoard.BoardSquares[startingSquare].occupyingPiece.IsWhitePiece)
                     {
                         //CANNOT use switch statement here, needs constants.  Gonna need a whole lot of if/else...
                         if (targetSquare == (startingSquare - 16))
                         {
-                            if (inputBoard.BoardSquares[startingSquare].occupyingPiece.hasMoved == false
+                            if (inputBoard.BoardSquares[startingSquare].occupyingPiece.HasMoved == false
                                 && inputBoard.BoardSquares[targetSquare].hasPiece == false
                                 && inputBoard.BoardSquares[targetSquare + 8].hasPiece == false)
                             {
@@ -518,7 +556,7 @@ namespace ChessAttempt1
                     {
                         if (targetSquare == (startingSquare + 16))
                         {
-                            if (inputBoard.BoardSquares[startingSquare].occupyingPiece.hasMoved == false
+                            if (inputBoard.BoardSquares[startingSquare].occupyingPiece.HasMoved == false
                                 && inputBoard.BoardSquares[targetSquare].hasPiece == false
                                 && inputBoard.BoardSquares[targetSquare - 8].hasPiece == false)
                             {
@@ -566,7 +604,7 @@ namespace ChessAttempt1
                 //  -17 (2u1l), -15 (2u1r), -10 (1u2l), -6 (1u2r)
                 // 2l cases need to make sure its not on the A or B file, 2R not on the G or H file
                 // 1l cases need to make sure its not on the A file, 1R not on the H file
-                if (inputBoard.BoardSquares[startingSquare].occupyingPiece.pieceName == "knight")
+                if (inputBoard.BoardSquares[startingSquare].occupyingPiece.PieceName == "knight")
                 {
                     if (targetSquare == startingSquare - 17)
                     {
@@ -657,7 +695,7 @@ namespace ChessAttempt1
                 //classic bishop
                 //moves diagonally any number of spaces until reaching a piece or the edge of the board
                 //cannot jump pieces
-                if (inputBoard.BoardSquares[startingSquare].occupyingPiece.pieceName == "bishop")
+                if (inputBoard.BoardSquares[startingSquare].occupyingPiece.PieceName == "bishop")
                 {
                     //direction the bishop is moving, with -9,  -7, 7, and 9 representing upleft, upright, downleft, downright
                     int direction = 0;
@@ -752,7 +790,7 @@ namespace ChessAttempt1
                 //classic queen
                 //can move as a bishop OR as a rook
                 //defaulting to copying code from both, but may be modified later.
-                if (inputBoard.BoardSquares[startingSquare].occupyingPiece.pieceName == "queen")
+                if (inputBoard.BoardSquares[startingSquare].occupyingPiece.PieceName == "queen")
                 {
                     if (inputBoard.BoardSquares[startingSquare].row == inputBoard.BoardSquares[targetSquare].row)
                     {
@@ -925,7 +963,7 @@ namespace ChessAttempt1
                 //classic king
                 //can move one space in any direction (as long as not off the board)
                 //UNFINISHED: castling: king moves two spaces, rook moves to its opposite side
-                if (inputBoard.BoardSquares[startingSquare].occupyingPiece.pieceName == "king")
+                if (inputBoard.BoardSquares[startingSquare].occupyingPiece.PieceName == "king")
                 {
                     if (targetSquare >= 0 && targetSquare <= 63)
                     {
@@ -995,8 +1033,8 @@ namespace ChessAttempt1
             {
                 if(inputBoard.BoardSquares[i].hasPiece)
                 {
-                    if (inputBoard.BoardSquares[i].occupyingPiece.isWhitePiece == isWhiteKing
-                        && inputBoard.BoardSquares[i].occupyingPiece.pieceName == "king")
+                    if (inputBoard.BoardSquares[i].occupyingPiece.IsWhitePiece == isWhiteKing
+                        && inputBoard.BoardSquares[i].occupyingPiece.PieceName == "king")
                     {
                         kingSquare = i;
                     }
@@ -1013,7 +1051,7 @@ namespace ChessAttempt1
             {
                 if (inputBoard.BoardSquares[i].hasPiece)
                 {
-                    if (inputBoard.BoardSquares[i].occupyingPiece.isWhitePiece != isWhiteKing)
+                    if (inputBoard.BoardSquares[i].occupyingPiece.IsWhitePiece != isWhiteKing)
                     {
                         if (CheckLegalMove(inputBoard, i, kingSquare) == true)
                         {

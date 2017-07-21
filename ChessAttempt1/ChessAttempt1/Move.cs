@@ -24,5 +24,6 @@ namespace ChessAttempt1
         public string TargetRank { get; set; }
         public string TargetFile { get; set; }
         public bool HasThisPieceMovedBefore { get; set; }
+        public bool Check { get; set; }
     }
 }

@@ -82,7 +82,7 @@ namespace ChessAttempt1
                 }
 
                 Piece p = new Piece();
-                p.addPiece(piece, blackArmyName, isWhitePiece);
+                p.AddPiece(piece, blackArmyName, isWhitePiece);
 
                 Square s = new Square();
                 s.setRow(1);
@@ -101,7 +101,7 @@ namespace ChessAttempt1
 
 
                 Piece p = new Piece();
-                p.addPiece(piece, blackArmyName, isWhitePiece);
+                p.AddPiece(piece, blackArmyName, isWhitePiece);
 
                 Square s = new Square();
                 s.setRow(2);
@@ -134,7 +134,7 @@ namespace ChessAttempt1
 
 
                 Piece p = new Piece();
-                p.addPiece(piece, whiteArmyName, isWhitePiece);
+                p.AddPiece(piece, whiteArmyName, isWhitePiece);
 
                 Square s = new Square();
                 s.setRow(7);
@@ -172,7 +172,7 @@ namespace ChessAttempt1
                 }
 
                 Piece p = new Piece();
-                p.addPiece(piece, whiteArmyName, isWhitePiece);
+                p.AddPiece(piece, whiteArmyName, isWhitePiece);
 
                 Square s = new Square();
                 s.setRow(8);
