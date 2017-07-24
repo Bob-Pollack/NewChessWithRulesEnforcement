@@ -6,7 +6,7 @@ namespace ChessAttempt1
 {
     class Board
     {
-        //probably want to do smomething more complicated here but we'll see
+        //information stored in the board
         public List<Square> BoardSquares { get; private set; }
         public bool isWhiteTurn { get; set; }
         public List<Piece> capturedWhitePieces { get; set; }
@@ -17,11 +17,8 @@ namespace ChessAttempt1
         public bool blackInCheck { get; set; }
         public List<Move> MoveList { get; set; }
         public string SpecialCase { get; set; }
-        //probably need to store the last move here for the sake of en passant rules 
-        //may be better to have it be a full list of moves to be used as a log
-        //not entirely sure how to do the repeat position check but we'll get there later
 
-
+        //constructor with defaults
         public Board()
         {
             BoardSquares = new List<Square>();
@@ -55,6 +52,7 @@ namespace ChessAttempt1
                 blackArmyName = "classic";
             }
 
+            //creates the squares and fills them with appropriate pieces as necessary
 
             //black back row
             for (int i = 1; i <= 8; i++)

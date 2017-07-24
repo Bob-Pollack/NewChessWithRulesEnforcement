@@ -12,7 +12,7 @@ namespace ChessAttempt1
         public string rank;
         public string file;
 
-        //color of square, if necessary
+        //color of square
         public bool isWhiteSquare { get; private set; }
 
         //determine if the square is empty
@@ -21,12 +21,14 @@ namespace ChessAttempt1
         //piece on it if any
         public Piece occupyingPiece { get; set; }
 
+        //stores the row and rank of the square based on a rownumber input
         public void setRow(int rowNumber)
         {
             row = rowNumber;
             rank = (9 - row).ToString();
         }
 
+        //stores the column and file based on a column number input
         public void setColumn(int columnNumber)
         {
             column = columnNumber;
@@ -60,16 +62,20 @@ namespace ChessAttempt1
 
         }
 
+        //sets the square color bool
         public void setSquareColor(bool isItWhite)
         {
             isWhiteSquare = isItWhite;
         }
 
+        //sets the bool for if the square has a piece on it
+        //if this is not set, square may still have a piece but it will be ignored
         public void setSquareOccupied(bool isOccupied)
         {
             hasPiece = isOccupied;
         }
 
+        //set a new piece on the square
         public void SetSquarePiece(Piece newPiece)
         {
             occupyingPiece = newPiece;

@@ -179,7 +179,7 @@ namespace ChessAttempt1
                         if (legalMove)
                         {
                             //makes a move object to track everything needed to make, log, or undo the move
-                            Move newMove = new Move();
+                            Move newMove = new Move();                            
                             newMove.StartingSquare = inputSquareNumber;
                             newMove.TargetSquare = outputSquareNumber;
                             newMove.MovingPiece = s1.occupyingPiece;
@@ -193,7 +193,8 @@ namespace ChessAttempt1
                             newMove.TargetRank = s2.rank;
                             newMove.TargetFile = s2.file;
                             newMove.HasThisPieceMovedBefore = inputBoard.BoardSquares[inputSquareNumber].occupyingPiece.HasMoved;
-
+                            newMove.SpecialCase = inputBoard.SpecialCase;
+                            
                             //moves the piece from the starting square to the target square.
                             //***may need to store the recently captured piece somehow for future use with the captured pieces list
                             inputBoard.BoardSquares[outputSquareNumber].occupyingPiece = s1.occupyingPiece;
@@ -203,6 +204,23 @@ namespace ChessAttempt1
                             if  (inputBoard.SpecialCase != "none")
                             {
                                 //***special rules for castling, en passant, and pawn promotion should go here
+                                if (inputBoard.SpecialCase == "castling queenside")
+                                {
+                                    //move the rook from the queenside corner to the right of the king's new position
+                                    inputBoard.BoardSquares[inputSquareNumber - 1].occupyingPiece =
+                                        inputBoard.BoardSquares[inputSquareNumber - 4].occupyingPiece;
+                                    inputBoard.BoardSquares[inputSquareNumber - 1].hasPiece = true;
+                                    inputBoard.BoardSquares[inputSquareNumber - 1].occupyingPiece.HasMoved = true;
+                                    inputBoard.BoardSquares[inputSquareNumber - 4].hasPiece = false;
+                                }
+                                else if (inputBoard.SpecialCase == "castling kingside")
+                                {
+                                    inputBoard.BoardSquares[inputSquareNumber + 1].occupyingPiece =
+                                       inputBoard.BoardSquares[inputSquareNumber + 3].occupyingPiece;
+                                    inputBoard.BoardSquares[inputSquareNumber + 1].hasPiece = true;
+                                    inputBoard.BoardSquares[inputSquareNumber + 1].occupyingPiece.HasMoved = true;
+                                    inputBoard.BoardSquares[inputSquareNumber + 3].hasPiece = false;
+                                }
                             }
 
                             //determine if the player put or left their king in check (illegal move) or put the opposing king in check
@@ -217,7 +235,7 @@ namespace ChessAttempt1
                             {
                                 //***any code related to pieces that were just removed goes here
 
-
+                                //updates the board for the state of check of both sides
                                 if (inputBoard.isWhiteTurn)
                                 {
                                     inputBoard.whiteInCheck = false;
@@ -235,21 +253,23 @@ namespace ChessAttempt1
                                     }
                                 }
 
+                                //changes whose turn it is
                                 inputBoard.isWhiteTurn = !inputBoard.isWhiteTurn;
+                                //adds the new move to the list of moves on the board
                                 inputBoard.MoveList.Add(newMove);
-
+                                //redraws the board
                                 Console.Clear();
                                 Console.WriteLine($"moved {s1.occupyingPiece.PieceSymbol} from {s1.file}{s1.rank} to { s2.file}{ s2.rank}");
                                 DrawBoard(inputBoard);
+                                //ends the loop for this turn
                                 turnInProgress = false;
                             }
+                            //undo the move using the move object if the move would place or leave the king of the moving player in check
                             else
                             {
                                 //use the move object to undo the change
-                                //inputBoard.BoardSquares[outputSquareNumber].occupyingPiece = s1.occupyingPiece;
-                                //inputBoard.BoardSquares[outputSquareNumber].hasPiece = true;
-                                //inputBoard.BoardSquares[outputSquareNumber].occupyingPiece.hasMoved = true;
-                                //inputBoard.BoardSquares[inputSquareNumber].hasPiece = false;
+                                //***this really should be broken out into its own method, would be useful to have an undo option
+                                //***would need to remove the move from the log in other situations 
                                 inputBoard.BoardSquares[newMove.StartingSquare].hasPiece = true;
                                 newMove.MovingPiece.HasMoved = newMove.HasThisPieceMovedBefore;
                                 inputBoard.BoardSquares[newMove.StartingSquare].occupyingPiece = newMove.MovingPiece;
@@ -258,9 +278,13 @@ namespace ChessAttempt1
                                 {
                                     inputBoard.BoardSquares[newMove.TargetSquare].occupyingPiece = newMove.CapturedPiece;
                                 }
+                                //***need to have more here for special cases (not yet implemented)
+                                if (newMove.SpecialCase != "none")
+                                {
+                                    //**special case (en passant, pawn promotion, or castling)
+                                }
 
-
-
+                                //message about illegal move because king is in check
                                 Console.Clear();
                                 Console.WriteLine($"{s1.occupyingPiece.PieceSymbol} cannot move from {s1.file}{s1.rank} to { s2.file}{ s2.rank} " +
                                     $"because the king will be in check");
@@ -270,6 +294,7 @@ namespace ChessAttempt1
                         }
                         else
                         {
+                            //message about a piece being unable to legally move to the target square
                             Console.Clear();
                             Console.WriteLine($"{s1.occupyingPiece.PieceSymbol} cannot move from {s1.file}{s1.rank} to { s2.file}{ s2.rank} ");
                             DrawBoard(inputBoard);
@@ -277,6 +302,7 @@ namespace ChessAttempt1
                     }
                     else
                     {
+                        //message about attempting to move the opponent's piece
                         Console.Clear();
                         Console.WriteLine("That is not your piece to move");
                         DrawBoard(inputBoard);
@@ -285,6 +311,7 @@ namespace ChessAttempt1
                 }
                 else
                 {
+                    //message about a starting square not having an active piece
                     Console.Clear();
                     Console.WriteLine("No piece to move from that square");
                     DrawBoard(inputBoard);

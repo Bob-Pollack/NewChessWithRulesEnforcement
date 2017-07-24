@@ -12,6 +12,7 @@ namespace ChessAttempt1
             //the piece that made the move
             //if a piece was captured
             //what piece, if any, was captured
+            //if the move was nonstandard (en passant, promotion, castling)
         //this should have all of the information necessary to log the moves and undo a move.
 
         public int StartingSquare { get; set; }
@@ -25,5 +26,6 @@ namespace ChessAttempt1
         public string TargetFile { get; set; }
         public bool HasThisPieceMovedBefore { get; set; }
         public bool Check { get; set; }
+        public string SpecialCase { get; set; }
     }
 }

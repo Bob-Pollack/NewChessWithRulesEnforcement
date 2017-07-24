@@ -23,11 +23,13 @@ namespace ChessAttempt1
 
         //this one seems to have been rendered redundant, leaving in for now
         //determine if piece is threatening the opposing king on the current board... may nto be used here
+        //***currently superfluous, consider removing in future update
         public  bool ThreatensKing { get; private set; }
 
-        //piece rank, if used.  pawn = 1, bishop/knight = 3, rook = 5, queen = 9, king = 200
+        //piece rank, if used.  pawn = 1, bishop/knight = 3, rook = 5, queen = 9, king = 10000
         public int PieceRank { get; private set; }
 
+        //fills in the information for a piece
         public void AddPiece(string piece, string armyName, bool isWhite)
         {
             Army = armyName;
@@ -35,10 +37,11 @@ namespace ChessAttempt1
             IsWhitePiece = isWhite;
             PieceName = piece;
             HasMoved = false;
-            //unicode does NOT look good in console window, will update later
+            //unicode does NOT look good in console window, may update later
             if (PieceName == "pawn" && IsWhitePiece)
             {
                 //pieceSymbol = '\u265f';
+                //instead of the actual unicode, just copy pasting the symbols here
                 PieceSymbol = '♟';
                 PieceRank = 1;
             }
@@ -90,12 +93,12 @@ namespace ChessAttempt1
             else if (PieceName == "king" && IsWhitePiece)
             {
                 PieceSymbol = '♚';
-                PieceRank = 200;
+                PieceRank = 10000;
             }
             else if (PieceName == "king" && IsWhitePiece == false)
             {
                 PieceSymbol = '♔';
-                PieceRank = 200;
+                PieceRank = 10000;
             }
         }
     }
