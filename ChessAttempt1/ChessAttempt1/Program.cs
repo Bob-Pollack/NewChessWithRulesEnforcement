@@ -179,6 +179,7 @@ namespace ChessAttempt1
                         if (legalMove)
                         {
                             //makes a move object to track everything needed to make, log, or undo the move
+                            //***possibly break this out into seperate function
                             Move newMove = new Move();                            
                             newMove.StartingSquare = inputSquareNumber;
                             newMove.TargetSquare = outputSquareNumber;
@@ -268,21 +269,7 @@ namespace ChessAttempt1
                             else
                             {
                                 //use the move object to undo the change
-                                //***this really should be broken out into its own method, would be useful to have an undo option
-                                //***would need to remove the move from the log in other situations 
-                                inputBoard.BoardSquares[newMove.StartingSquare].hasPiece = true;
-                                newMove.MovingPiece.HasMoved = newMove.HasThisPieceMovedBefore;
-                                inputBoard.BoardSquares[newMove.StartingSquare].occupyingPiece = newMove.MovingPiece;
-                                inputBoard.BoardSquares[newMove.TargetSquare].hasPiece = !newMove.WasTargetSquareEmpty;
-                                if (!newMove.WasTargetSquareEmpty)
-                                {
-                                    inputBoard.BoardSquares[newMove.TargetSquare].occupyingPiece = newMove.CapturedPiece;
-                                }
-                                //***need to have more here for special cases (not yet implemented)
-                                if (newMove.SpecialCase != "none")
-                                {
-                                    //**special case (en passant, pawn promotion, or castling)
-                                }
+                                UndoMove(inputBoard, newMove);
 
                                 //message about illegal move because king is in check
                                 Console.Clear();
@@ -315,6 +302,64 @@ namespace ChessAttempt1
                     Console.Clear();
                     Console.WriteLine("No piece to move from that square");
                     DrawBoard(inputBoard);
+                }
+            }
+        }
+
+        private static void UndoMove(Board inputBoard, Move moveToUndo)
+        {
+            //uses the move we've received to undo the board to the previous state
+            //***if we're going to use the captured pieces lists, will have to do something here to update them
+            inputBoard.BoardSquares[moveToUndo.StartingSquare].hasPiece = true;
+            moveToUndo.MovingPiece.HasMoved = moveToUndo.HasThisPieceMovedBefore;
+            inputBoard.BoardSquares[moveToUndo.StartingSquare].occupyingPiece = moveToUndo.MovingPiece;
+            inputBoard.BoardSquares[moveToUndo.TargetSquare].hasPiece = !moveToUndo.WasTargetSquareEmpty;
+            if (!moveToUndo.WasTargetSquareEmpty)
+            {
+                inputBoard.BoardSquares[moveToUndo.TargetSquare].occupyingPiece = moveToUndo.CapturedPiece;
+            }
+            //additional fixes to undo special case moves (castling, pawn promotion, en passant)
+            if (moveToUndo.SpecialCase != "none")
+            {
+                //if castling, need to reset the rook to its default position and hasMoved flag
+                if (moveToUndo.SpecialCase == "castling queenside")
+                {
+                    inputBoard.BoardSquares[moveToUndo.StartingSquare - 1].occupyingPiece.HasMoved = false;
+                    inputBoard.BoardSquares[moveToUndo.StartingSquare - 4].occupyingPiece =
+                        inputBoard.BoardSquares[moveToUndo.StartingSquare - 1].occupyingPiece;
+                    inputBoard.BoardSquares[moveToUndo.StartingSquare - 1].hasPiece = false;
+                    inputBoard.BoardSquares[moveToUndo.StartingSquare - 4].hasPiece = true;
+                }
+                else if (moveToUndo.SpecialCase == "castling kingside")
+                {
+                    //else if (inputBoard.SpecialCase == "castling kingside")
+                    //{
+                    //    inputBoard.BoardSquares[inputSquareNumber + 1].occupyingPiece =
+                    //       inputBoard.BoardSquares[inputSquareNumber + 3].occupyingPiece;
+                    //    inputBoard.BoardSquares[inputSquareNumber + 1].hasPiece = true;
+                    //    inputBoard.BoardSquares[inputSquareNumber + 1].occupyingPiece.HasMoved = true;
+                    //    inputBoard.BoardSquares[inputSquareNumber + 3].hasPiece = false;
+                    //}
+                    inputBoard.BoardSquares[moveToUndo.StartingSquare + 1].occupyingPiece.HasMoved = false;
+                    inputBoard.BoardSquares[moveToUndo.StartingSquare + 3].occupyingPiece =
+                        inputBoard.BoardSquares[moveToUndo.StartingSquare + 1].occupyingPiece;
+                    inputBoard.BoardSquares[moveToUndo.StartingSquare + 1].hasPiece = false;
+                    inputBoard.BoardSquares[moveToUndo.StartingSquare + 3].hasPiece = true;
+                }
+                //**other special case (en passant, pawn promotion)
+            }
+            
+            //making sure we dont get an out of bounds error
+            if(inputBoard.MoveList.Count > 0)
+            {
+                //checks if we're undoing a move from the move list.  If so, remove it from the move list
+                //and change the board situation (whose turn it is, is player in check, etc).
+                if (moveToUndo == inputBoard.MoveList[inputBoard.MoveList.Count - 1])
+                {
+                    //scoreList.RemoveAt(scoreList.Count-1);
+                    inputBoard.MoveList.RemoveAt(inputBoard.MoveList.Count - 1);
+                    inputBoard.isWhiteTurn = !inputBoard.isWhiteTurn;
+
                 }
             }
         }
