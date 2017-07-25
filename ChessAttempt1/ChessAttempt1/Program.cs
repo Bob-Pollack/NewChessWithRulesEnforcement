@@ -134,6 +134,21 @@ namespace ChessAttempt1
                         Console.WriteLine("Resuming game");
                         DrawBoard(inputBoard);
                     }
+                    else if (inputRow == "undo")
+                    {
+                        Console.Clear();
+                        if (inputBoard.MoveList.Count > 0)
+                        {
+                            UndoMove(inputBoard, inputBoard.MoveList[inputBoard.MoveList.Count - 1]);
+                            Console.WriteLine("undo successful.");
+                            DrawBoard(inputBoard);
+                        }
+                        else
+                        {
+                            Console.WriteLine("undo unsuccessful, no moves to undo");
+                            DrawBoard(inputBoard);
+                        }
+                    }
                     //confirms that legal user input has been 
                     else if (inputColumnNumber != 0 && outputColumnNumber != 0
                         && inputRowNumber > 0 && outputRowNumber > 0
@@ -222,6 +237,65 @@ namespace ChessAttempt1
                                     inputBoard.BoardSquares[inputSquareNumber + 1].occupyingPiece.HasMoved = true;
                                     inputBoard.BoardSquares[inputSquareNumber + 3].hasPiece = false;
                                 }
+                                else if (inputBoard.SpecialCase == "pawn promotion")
+                                {
+                                    //check if this move leaves allied king in check,
+                                    //otherwise we would have to undo after having player input for the promotion
+                                    if(IsKingInCheck(inputBoard, inputBoard.isWhiteTurn) == false)
+                                    {
+                                        //loop until we have proper user input
+                                        bool goodPromotionInput = false;
+                                        while(goodPromotionInput == false)
+                                        {
+                                            //clear console, draw the board, request user input
+                                            Console.Clear();
+                                            DrawBoard(inputBoard);
+                                            Console.WriteLine("pawn has reached the edge of the board.  please promote to" +
+                                                "knight (k), bishop (b), rook (r), or queen (q)");
+                                            string promotionInput = Console.ReadLine().ToLower();
+                                            //make sure ther is some input to avoid out of bounds error
+                                            if (promotionInput != "")
+                                            {
+                                                goodPromotionInput = true;
+                                                //create a new piece to put on the square based on the inputs
+                                                Piece PromotedPiece = new Piece();
+                                                string currentArmy = GetArmy(inputBoard, inputBoard.isWhiteTurn);
+
+                                                //check first character of user input for proper letter
+                                                if (promotionInput[0] == 'k')
+                                                {
+                                                    //fills in details for the new piece, then places it on the board replacing the pawn
+                                                    PromotedPiece.AddPiece("knight", currentArmy, inputBoard.isWhiteTurn);
+                                                    PromotedPiece.HasMoved = true;
+                                                    inputBoard.BoardSquares[outputSquareNumber].occupyingPiece = PromotedPiece;
+                                                }
+                                                else if (promotionInput[0] == 'b')
+                                                {
+                                                    PromotedPiece.AddPiece("bishop", currentArmy, inputBoard.isWhiteTurn);
+                                                    PromotedPiece.HasMoved = true;
+                                                    inputBoard.BoardSquares[outputSquareNumber].occupyingPiece = PromotedPiece;
+                                                }
+                                                else if (promotionInput[0] == 'r')
+                                                {
+                                                    PromotedPiece.AddPiece("rook", currentArmy, inputBoard.isWhiteTurn);
+                                                    PromotedPiece.HasMoved = true;
+                                                    inputBoard.BoardSquares[outputSquareNumber].occupyingPiece = PromotedPiece;
+                                                }
+                                                else if (promotionInput[0] == 'q')
+                                                {
+                                                    PromotedPiece.AddPiece("queen", currentArmy, inputBoard.isWhiteTurn);
+                                                    PromotedPiece.HasMoved = true;
+                                                    inputBoard.BoardSquares[outputSquareNumber].occupyingPiece = PromotedPiece;
+                                                }
+                                                else
+                                                {
+                                                    goodPromotionInput = false;
+                                                }
+
+                                            }
+                                        }
+                                    }
+                                }
                             }
 
                             //determine if the player put or left their king in check (illegal move) or put the opposing king in check
@@ -259,8 +333,22 @@ namespace ChessAttempt1
                                 //adds the new move to the list of moves on the board
                                 inputBoard.MoveList.Add(newMove);
                                 //redraws the board
+                                string outputMessage = $"moved {s1.occupyingPiece.PieceSymbol} from {s1.file}{s1.rank} to { s2.file}{ s2.rank}";
+                                if (inputBoard.SpecialCase == "castling queenside")
+                                {
+                                    outputMessage = outputMessage + " castling queenside";
+                                }
+                                else if (inputBoard.SpecialCase == "castling kingside")
+                                {
+                                    outputMessage = outputMessage + " castling kingside";
+                                }
+                                else if (inputBoard.SpecialCase == "pawn promotion")
+                                {
+                                    char newPieceSymbol = s2.occupyingPiece.PieceSymbol;
+                                    outputMessage = outputMessage + $" and promotes to {newPieceSymbol}";
+                                }
                                 Console.Clear();
-                                Console.WriteLine($"moved {s1.occupyingPiece.PieceSymbol} from {s1.file}{s1.rank} to { s2.file}{ s2.rank}");
+                                Console.WriteLine(outputMessage);
                                 DrawBoard(inputBoard);
                                 //ends the loop for this turn
                                 turnInProgress = false;
@@ -306,6 +394,22 @@ namespace ChessAttempt1
             }
         }
 
+        private static string GetArmy(Board inputBoard, bool isWhiteArmy)
+        {
+            //find any piece of the proper army color, return its army parameter
+            for(int i = 0; i <= 63; i++)
+            {
+                if(inputBoard.BoardSquares[i].hasPiece)
+                {
+                    if(inputBoard.BoardSquares[i].occupyingPiece.IsWhitePiece == isWhiteArmy)
+                    {
+                        return inputBoard.BoardSquares[i].occupyingPiece.Army;
+                    }
+                }
+            }
+            return "error: no piece of that color exists on the board.  this text should never appear.";
+        }
+
         private static void UndoMove(Board inputBoard, Move moveToUndo)
         {
             //uses the move we've received to undo the board to the previous state
@@ -332,14 +436,6 @@ namespace ChessAttempt1
                 }
                 else if (moveToUndo.SpecialCase == "castling kingside")
                 {
-                    //else if (inputBoard.SpecialCase == "castling kingside")
-                    //{
-                    //    inputBoard.BoardSquares[inputSquareNumber + 1].occupyingPiece =
-                    //       inputBoard.BoardSquares[inputSquareNumber + 3].occupyingPiece;
-                    //    inputBoard.BoardSquares[inputSquareNumber + 1].hasPiece = true;
-                    //    inputBoard.BoardSquares[inputSquareNumber + 1].occupyingPiece.HasMoved = true;
-                    //    inputBoard.BoardSquares[inputSquareNumber + 3].hasPiece = false;
-                    //}
                     inputBoard.BoardSquares[moveToUndo.StartingSquare + 1].occupyingPiece.HasMoved = false;
                     inputBoard.BoardSquares[moveToUndo.StartingSquare + 3].occupyingPiece =
                         inputBoard.BoardSquares[moveToUndo.StartingSquare + 1].occupyingPiece;
@@ -359,6 +455,8 @@ namespace ChessAttempt1
                     //scoreList.RemoveAt(scoreList.Count-1);
                     inputBoard.MoveList.RemoveAt(inputBoard.MoveList.Count - 1);
                     inputBoard.isWhiteTurn = !inputBoard.isWhiteTurn;
+                    inputBoard.whiteInCheck = IsKingInCheck(inputBoard, true);
+                    inputBoard.blackInCheck = IsKingInCheck(inputBoard, false);
 
                 }
             }
@@ -559,6 +657,12 @@ namespace ChessAttempt1
                 //special rule for promotion of reaching final rank NOT IMPLEMENTED YET
                 if (inputBoard.BoardSquares[startingSquare].occupyingPiece.PieceName == "pawn")
                 {
+                    //check if the target square is on the back row.  if so, if the move is legal, the pawn will be given the opportunity to promote.
+                    if(inputBoard.BoardSquares[targetSquare].rank == "8" || inputBoard.BoardSquares[targetSquare].rank == "1")
+                    {
+                        inputBoard.SpecialCase = "pawn promotion";
+                    }
+
                     //check for white vs black
                     if (inputBoard.BoardSquares[startingSquare].occupyingPiece.IsWhitePiece)
                     {
@@ -578,7 +682,7 @@ namespace ChessAttempt1
                         else if (targetSquare == (startingSquare - 8))
                         {
                             if (inputBoard.BoardSquares[targetSquare].hasPiece == false)
-                            {
+                            {                               
                                 return true;
                             }
                             return false;
@@ -1165,7 +1269,6 @@ namespace ChessAttempt1
 }
 
 //rules not yet fully implemented
-    //castling
     //pawn promotion
     //en passant
     //end game 
@@ -1180,3 +1283,5 @@ namespace ChessAttempt1
 //spider - pawns can move sideways if on the same square as their army color.  queen moves only 2 spaces but kills the attacking piece when captured
 //opposition - major and minor pieces (bishop, knight, rook) cannot capture or be captured by the opposing army's equivalent pieces.
 //something with a minor drawback but the ability  to freely capture its own pieces
+
+    ///******************SOMETHING IS CURRENTLY WRONG WITH THE PROMOTION SYSTEM, ITS STRING IS IN EFFECT TOO OFTEN.  LOOK INTO THIS TOMORROW.
