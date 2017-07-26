@@ -193,9 +193,11 @@ namespace ChessAttempt1
 
                         if (legalMove)
                         {
+                            //check for special cases (castling, pawn promotion, en passant) and set the flag if any has triggered
+                            UpdateSpecialCaseFlag(inputBoard, inputSquareNumber, outputSquareNumber);
                             //makes a move object to track everything needed to make, log, or undo the move
                             //***possibly break this out into seperate function
-                            Move newMove = new Move();                            
+                            Move newMove = new Move();
                             newMove.StartingSquare = inputSquareNumber;
                             newMove.TargetSquare = outputSquareNumber;
                             newMove.MovingPiece = s1.occupyingPiece;
@@ -210,14 +212,14 @@ namespace ChessAttempt1
                             newMove.TargetFile = s2.file;
                             newMove.HasThisPieceMovedBefore = inputBoard.BoardSquares[inputSquareNumber].occupyingPiece.HasMoved;
                             newMove.SpecialCase = inputBoard.SpecialCase;
-                            
+
                             //moves the piece from the starting square to the target square.
                             //***may need to store the recently captured piece somehow for future use with the captured pieces list
                             inputBoard.BoardSquares[outputSquareNumber].occupyingPiece = s1.occupyingPiece;
                             inputBoard.BoardSquares[outputSquareNumber].hasPiece = true;
                             inputBoard.BoardSquares[outputSquareNumber].occupyingPiece.HasMoved = true;
                             inputBoard.BoardSquares[inputSquareNumber].hasPiece = false;
-                            if  (inputBoard.SpecialCase != "none")
+                            if (inputBoard.SpecialCase != "none")
                             {
                                 //***special rules for castling, en passant, and pawn promotion should go here
                                 if (inputBoard.SpecialCase == "castling queenside")
@@ -241,11 +243,11 @@ namespace ChessAttempt1
                                 {
                                     //check if this move leaves allied king in check,
                                     //otherwise we would have to undo after having player input for the promotion
-                                    if(IsKingInCheck(inputBoard, inputBoard.isWhiteTurn) == false)
+                                    if (IsKingInCheck(inputBoard, inputBoard.isWhiteTurn) == false)
                                     {
                                         //loop until we have proper user input
                                         bool goodPromotionInput = false;
-                                        while(goodPromotionInput == false)
+                                        while (goodPromotionInput == false)
                                         {
                                             //clear console, draw the board, request user input
                                             Console.Clear();
@@ -314,7 +316,7 @@ namespace ChessAttempt1
                                 if (inputBoard.isWhiteTurn)
                                 {
                                     inputBoard.whiteInCheck = false;
-                                    if(didIJustCheckTheOpposingKing)
+                                    if (didIJustCheckTheOpposingKing)
                                     {
                                         inputBoard.blackInCheck = true;
                                     }
@@ -391,6 +393,36 @@ namespace ChessAttempt1
                     Console.WriteLine("No piece to move from that square");
                     DrawBoard(inputBoard);
                 }
+            }
+        }
+
+        private static void UpdateSpecialCaseFlag(Board inputBoard, int startingSquare, int targetSquare)
+        {
+            //check if the moved piece is a pawn and if it reached the back row.  if so, trip the pawn promotion flag
+            if (inputBoard.BoardSquares[startingSquare].occupyingPiece.PieceName == "pawn" && 
+                (inputBoard.BoardSquares[targetSquare].rank == "8" || inputBoard.BoardSquares[targetSquare].rank == "1"))
+            {
+                inputBoard.SpecialCase = "pawn promotion";
+            }
+            //check if the moved piece is a king and it moved right two spaces.  if so, trip the castlign kingside flag
+            else if (inputBoard.BoardSquares[startingSquare].occupyingPiece.PieceName == "king" &&
+                targetSquare == startingSquare + 2 )
+            {
+                inputBoard.SpecialCase = "castling kingside";
+            }
+            //check if the moved piece is a king and it moved left two spaces.  if so, trip the castling queenside flag
+            else if (inputBoard.BoardSquares[startingSquare].occupyingPiece.PieceName == "king" &&
+                targetSquare == startingSquare - 2 )
+            {
+                inputBoard.SpecialCase = "castling queenside";
+            }
+            //check if the moved piece is a pawn moving diagonally onto an unoccupied space.  if so, trip the en passant flag
+            else if (inputBoard.BoardSquares[startingSquare].occupyingPiece.PieceName == "pawn" &&
+                (targetSquare == startingSquare + 7 || targetSquare == startingSquare + 9 
+                || targetSquare == startingSquare - 7 || targetSquare == startingSquare - 9) &&
+                inputBoard.BoardSquares[targetSquare].hasPiece == false)
+            {
+                inputBoard.SpecialCase = "en passant";
             }
         }
 
@@ -657,12 +689,6 @@ namespace ChessAttempt1
                 //special rule for promotion of reaching final rank NOT IMPLEMENTED YET
                 if (inputBoard.BoardSquares[startingSquare].occupyingPiece.PieceName == "pawn")
                 {
-                    //check if the target square is on the back row.  if so, if the move is legal, the pawn will be given the opportunity to promote.
-                    if(inputBoard.BoardSquares[targetSquare].rank == "8" || inputBoard.BoardSquares[targetSquare].rank == "1")
-                    {
-                        inputBoard.SpecialCase = "pawn promotion";
-                    }
-
                     //check for white vs black
                     if (inputBoard.BoardSquares[startingSquare].occupyingPiece.IsWhitePiece)
                     {
@@ -682,7 +708,7 @@ namespace ChessAttempt1
                         else if (targetSquare == (startingSquare - 8))
                         {
                             if (inputBoard.BoardSquares[targetSquare].hasPiece == false)
-                            {                               
+                            {
                                 return true;
                             }
                             return false;
@@ -1173,8 +1199,7 @@ namespace ChessAttempt1
                                             && inputBoard.BoardSquares[startingSquare - 2].hasPiece == false
                                             && inputBoard.BoardSquares[startingSquare - 1].hasPiece == false)
                                         {
-                                            //set special case flag to alert the program that this is not a standard move
-                                            inputBoard.SpecialCase = "castling queenside";
+                                            //previously set castling queenside flag here
                                             return true;
                                         }
                                     }
@@ -1200,8 +1225,7 @@ namespace ChessAttempt1
                                         if (inputBoard.BoardSquares[startingSquare + 2].hasPiece == false
                                             && inputBoard.BoardSquares[startingSquare + 1].hasPiece == false)
                                         {
-                                            //set special case flag to alert the program that this is not a standard move
-                                            inputBoard.SpecialCase = "castling kingside";
+                                            //previously set castling kingside flag here
                                             return true;
                                         }
                                     }
