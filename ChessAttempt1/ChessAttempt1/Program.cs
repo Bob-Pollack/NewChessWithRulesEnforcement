@@ -165,15 +165,15 @@ namespace ChessAttempt1
                 }
 
                 //get the square on the board that the player chose as their square with their piece to move
-                int inputSquareNumber = 0;
-                inputSquareNumber = 8 * (8 - inputRowNumber) + inputColumnNumber - 1;
+                int startingSquare = 0;
+                startingSquare = 8 * (8 - inputRowNumber) + inputColumnNumber - 1;
                 //get the square on the board that the player chose to move their piece to
-                int outputSquareNumber = 0;
-                outputSquareNumber = 8 * (8 - outputRowNumber) + outputColumnNumber - 1;
+                int targetSquare = 0;
+                targetSquare = 8 * (8 - outputRowNumber) + outputColumnNumber - 1;
 
                 //gets the squares from the board that have those square numbers
-                Square s1 = inputBoard.BoardSquares[inputSquareNumber];
-                Square s2 = inputBoard.BoardSquares[outputSquareNumber];
+                Square s1 = inputBoard.BoardSquares[startingSquare];
+                Square s2 = inputBoard.BoardSquares[targetSquare];
                 //confirms that there is a piece on the square the player selected.  if not, loop back to start for more player input
                 if (s1.hasPiece)
                 {
@@ -189,17 +189,17 @@ namespace ChessAttempt1
                     {
                         //calls check legal move function to confirm that the selected piece is allowed to move to the target square
                         //does not check if the move would leave that player's king in check
-                        bool legalMove = CheckLegalMove(inputBoard, inputSquareNumber, outputSquareNumber);
+                        bool legalMove = CheckLegalMove(inputBoard, startingSquare, targetSquare);
 
                         if (legalMove)
                         {
                             //check for special cases (castling, pawn promotion, en passant) and set the flag if any has triggered
-                            UpdateSpecialCaseFlag(inputBoard, inputSquareNumber, outputSquareNumber);
+                            UpdateSpecialCaseFlag(inputBoard, startingSquare, targetSquare);
                             //makes a move object to track everything needed to make, log, or undo the move
                             //***possibly break this out into seperate function
                             Move newMove = new Move();
-                            newMove.StartingSquare = inputSquareNumber;
-                            newMove.TargetSquare = outputSquareNumber;
+                            newMove.StartingSquare = startingSquare;
+                            newMove.TargetSquare = targetSquare;
                             newMove.MovingPiece = s1.occupyingPiece;
                             newMove.WasTargetSquareEmpty = !s2.hasPiece;
                             if (s2.hasPiece)
@@ -210,34 +210,34 @@ namespace ChessAttempt1
                             newMove.StartingFile = s1.file;
                             newMove.TargetRank = s2.rank;
                             newMove.TargetFile = s2.file;
-                            newMove.HasThisPieceMovedBefore = inputBoard.BoardSquares[inputSquareNumber].occupyingPiece.HasMoved;
+                            newMove.HasThisPieceMovedBefore = inputBoard.BoardSquares[startingSquare].occupyingPiece.HasMoved;
                             newMove.SpecialCase = inputBoard.SpecialCase;
 
                             //moves the piece from the starting square to the target square.
                             //***may need to store the recently captured piece somehow for future use with the captured pieces list
-                            inputBoard.BoardSquares[outputSquareNumber].occupyingPiece = s1.occupyingPiece;
-                            inputBoard.BoardSquares[outputSquareNumber].hasPiece = true;
-                            inputBoard.BoardSquares[outputSquareNumber].occupyingPiece.HasMoved = true;
-                            inputBoard.BoardSquares[inputSquareNumber].hasPiece = false;
+                            inputBoard.BoardSquares[targetSquare].occupyingPiece = s1.occupyingPiece;
+                            inputBoard.BoardSquares[targetSquare].hasPiece = true;
+                            inputBoard.BoardSquares[targetSquare].occupyingPiece.HasMoved = true;
+                            inputBoard.BoardSquares[startingSquare].hasPiece = false;
                             if (inputBoard.SpecialCase != "none")
                             {
                                 //***special rules for castling, en passant, and pawn promotion should go here
                                 if (inputBoard.SpecialCase == "castling queenside")
                                 {
                                     //move the rook from the queenside corner to the right of the king's new position
-                                    inputBoard.BoardSquares[inputSquareNumber - 1].occupyingPiece =
-                                        inputBoard.BoardSquares[inputSquareNumber - 4].occupyingPiece;
-                                    inputBoard.BoardSquares[inputSquareNumber - 1].hasPiece = true;
-                                    inputBoard.BoardSquares[inputSquareNumber - 1].occupyingPiece.HasMoved = true;
-                                    inputBoard.BoardSquares[inputSquareNumber - 4].hasPiece = false;
+                                    inputBoard.BoardSquares[startingSquare - 1].occupyingPiece =
+                                        inputBoard.BoardSquares[startingSquare - 4].occupyingPiece;
+                                    inputBoard.BoardSquares[startingSquare - 1].hasPiece = true;
+                                    inputBoard.BoardSquares[startingSquare - 1].occupyingPiece.HasMoved = true;
+                                    inputBoard.BoardSquares[startingSquare - 4].hasPiece = false;
                                 }
                                 else if (inputBoard.SpecialCase == "castling kingside")
                                 {
-                                    inputBoard.BoardSquares[inputSquareNumber + 1].occupyingPiece =
-                                       inputBoard.BoardSquares[inputSquareNumber + 3].occupyingPiece;
-                                    inputBoard.BoardSquares[inputSquareNumber + 1].hasPiece = true;
-                                    inputBoard.BoardSquares[inputSquareNumber + 1].occupyingPiece.HasMoved = true;
-                                    inputBoard.BoardSquares[inputSquareNumber + 3].hasPiece = false;
+                                    inputBoard.BoardSquares[startingSquare + 1].occupyingPiece =
+                                       inputBoard.BoardSquares[startingSquare + 3].occupyingPiece;
+                                    inputBoard.BoardSquares[startingSquare + 1].hasPiece = true;
+                                    inputBoard.BoardSquares[startingSquare + 1].occupyingPiece.HasMoved = true;
+                                    inputBoard.BoardSquares[startingSquare + 3].hasPiece = false;
                                 }
                                 else if (inputBoard.SpecialCase == "pawn promotion")
                                 {
@@ -271,28 +271,28 @@ namespace ChessAttempt1
                                                     //fills in details for the new piece, then places it on the board replacing the pawn
                                                     PromotedPiece.AddPiece("knight", currentArmy, inputBoard.isWhiteTurn);
                                                     PromotedPiece.HasMoved = true;
-                                                    inputBoard.BoardSquares[outputSquareNumber].occupyingPiece = PromotedPiece;
+                                                    inputBoard.BoardSquares[targetSquare].occupyingPiece = PromotedPiece;
                                                     newMove.NewPiece = PromotedPiece;
                                                 }
                                                 else if (promotionInput[0] == 'b')
                                                 {
                                                     PromotedPiece.AddPiece("bishop", currentArmy, inputBoard.isWhiteTurn);
                                                     PromotedPiece.HasMoved = true;
-                                                    inputBoard.BoardSquares[outputSquareNumber].occupyingPiece = PromotedPiece;
+                                                    inputBoard.BoardSquares[targetSquare].occupyingPiece = PromotedPiece;
                                                     newMove.NewPiece = PromotedPiece;
                                                 }
                                                 else if (promotionInput[0] == 'r')
                                                 {
                                                     PromotedPiece.AddPiece("rook", currentArmy, inputBoard.isWhiteTurn);
                                                     PromotedPiece.HasMoved = true;
-                                                    inputBoard.BoardSquares[outputSquareNumber].occupyingPiece = PromotedPiece;
+                                                    inputBoard.BoardSquares[targetSquare].occupyingPiece = PromotedPiece;
                                                     newMove.NewPiece = PromotedPiece;
                                                 }
                                                 else if (promotionInput[0] == 'q')
                                                 {
                                                     PromotedPiece.AddPiece("queen", currentArmy, inputBoard.isWhiteTurn);
                                                     PromotedPiece.HasMoved = true;
-                                                    inputBoard.BoardSquares[outputSquareNumber].occupyingPiece = PromotedPiece;
+                                                    inputBoard.BoardSquares[targetSquare].occupyingPiece = PromotedPiece;
                                                     newMove.NewPiece = PromotedPiece;
                                                 }
                                                 else
@@ -410,8 +410,14 @@ namespace ChessAttempt1
 
         private static void UpdateSpecialCaseFlag(Board inputBoard, int startingSquare, int targetSquare)
         {
+            //check if a pawn just made a double move.  this flag is only relevant when checking for en passant on the next move.
+            if (inputBoard.BoardSquares[startingSquare].occupyingPiece.PieceName == "pawn" &&
+                (startingSquare == targetSquare + 16 || startingSquare == targetSquare - 16))
+            {
+                inputBoard.SpecialCase = "pawn double move";
+            }
             //check if the moved piece is a pawn and if it reached the back row.  if so, trip the pawn promotion flag
-            if (inputBoard.BoardSquares[startingSquare].occupyingPiece.PieceName == "pawn" && 
+            else if (inputBoard.BoardSquares[startingSquare].occupyingPiece.PieceName == "pawn" && 
                 (inputBoard.BoardSquares[targetSquare].rank == "8" || inputBoard.BoardSquares[targetSquare].rank == "1"))
             {
                 inputBoard.SpecialCase = "pawn promotion";
@@ -766,6 +772,13 @@ namespace ChessAttempt1
                             {
                                 return true;
                             }
+                            //en passant check - confirms that the last move was a pawn double move to the square one to the right of our pawn
+                            else if (inputBoard.BoardSquares[startingSquare].file != "h"
+                                && inputBoard.MoveList[inputBoard.MoveList.Count - 1].SpecialCase == "pawn double move"
+                                && inputBoard.MoveList[inputBoard.MoveList.Count - 1].TargetSquare == startingSquare + 1)
+                            {
+                                return true;
+                            }
                             return false;
                         }
                         //checks if trying to capture diagonally left
@@ -773,6 +786,13 @@ namespace ChessAttempt1
                         {
                             if (inputBoard.BoardSquares[targetSquare].hasPiece
                                 && inputBoard.BoardSquares[startingSquare].file != "a")
+                            {
+                                return true;
+                            }
+                            //en passant check - confirms that the last move was a pawn double move to the square one to the left of our pawn
+                            else if (inputBoard.BoardSquares[startingSquare].file != "a"
+                                && inputBoard.MoveList[inputBoard.MoveList.Count - 1].SpecialCase == "pawn double move"
+                                && inputBoard.MoveList[inputBoard.MoveList.Count - 1].TargetSquare == startingSquare - 1 )
                             {
                                 return true;
                             }
@@ -814,12 +834,26 @@ namespace ChessAttempt1
                             {
                                 return true;
                             }
+                            //en passant check - confirms that the last move was a pawn double move to the square one to the left of our pawn
+                            else if (inputBoard.BoardSquares[startingSquare].file != "h"
+                                && inputBoard.MoveList[inputBoard.MoveList.Count - 1].SpecialCase == "pawn double move"
+                                && inputBoard.MoveList[inputBoard.MoveList.Count - 1].TargetSquare == startingSquare + 1)
+                            {
+                                return true;
+                            }
                             return false;
                         }
                         else if (targetSquare == (startingSquare + 7))
                         {
                             if (inputBoard.BoardSquares[targetSquare].hasPiece
                                 && inputBoard.BoardSquares[startingSquare].file != "a")
+                            {
+                                return true;
+                            }
+                            //en passant check - confirms that the last move was a pawn double move to the square one to the left of our pawn
+                            else if (inputBoard.BoardSquares[startingSquare].file != "a"
+                                && inputBoard.MoveList[inputBoard.MoveList.Count - 1].SpecialCase == "pawn double move"
+                                && inputBoard.MoveList[inputBoard.MoveList.Count - 1].TargetSquare == startingSquare - 1)
                             {
                                 return true;
                             }
@@ -1338,19 +1372,27 @@ namespace ChessAttempt1
 }
 
 //rules not yet fully implemented
-    //pawn promotion
     //en passant
     //end game 
         //checking for no legal moves (stalemate or checkmate)
-        //checking for "same position 3 times"
+            //if a player on his turn has no legal moves and is in check, they lose the game by checkmate
+            //if a player on his turn has no legal moves and is NOT in check, the game is a draw by stalemate
+        //checking for threefold repetition
+            //if the board would reach the same position for the 3rd (or more) time as a result of his move, a player may declare a draw
+                //castling rights and en passant rights are counted as different positions, but swapping identical piece positions does not.
+            //if the board has reached teh same position for the 3rd (or more) time as a result of the opponent's move, a player may declare a draw
         //checking for "no pieces or pawn moves for 50 turns"
+            //at 50 moves for each side where no pieces were captured and no pawns were moved, instead of moving player may declare a draw
+                //technically they must be able to make a legal move that does not change the situation to be able to declare the draw
+                //the draw may be declared on any subsequent turn unless the a pawn has been moved or a piece captured
+            //at 75 moves for each side where no pieces were captured and no pawns were moved, game should automatically end in a draw
         //resign
+            //at any time, a player may forefeit and lose the game
         //offer draw
+            //at any time, a player may offer his oppnent a draw.  if his opponent accepts, the game is drawn
 
 
 //possible alternative armies 
 //spider - pawns can move sideways if on the same square as their army color.  queen moves only 2 spaces but kills the attacking piece when captured
 //opposition - major and minor pieces (bishop, knight, rook) cannot capture or be captured by the opposing army's equivalent pieces.
 //something with a minor drawback but the ability  to freely capture its own pieces
-
-    ///******************SOMETHING IS CURRENTLY WRONG WITH THE PROMOTION SYSTEM, ITS STRING IS IN EFFECT TOO OFTEN.  LOOK INTO THIS TOMORROW.
