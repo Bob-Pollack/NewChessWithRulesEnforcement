@@ -200,16 +200,16 @@ namespace ChessAttempt1
                             Move newMove = new Move();
                             newMove.StartingSquare = startingSquare;
                             newMove.TargetSquare = targetSquare;
-                            newMove.MovingPiece = s1.occupyingPiece;
-                            newMove.WasTargetSquareEmpty = !s2.hasPiece;
-                            if (s2.hasPiece)
+                            newMove.MovingPiece = inputBoard.BoardSquares[startingSquare].occupyingPiece;
+                            newMove.WasTargetSquareEmpty = !inputBoard.BoardSquares[targetSquare].hasPiece;
+                            if (inputBoard.BoardSquares[targetSquare].hasPiece)
                             {
-                                newMove.CapturedPiece = s2.occupyingPiece;
+                                newMove.CapturedPiece = inputBoard.BoardSquares[targetSquare].occupyingPiece;
                             }
-                            newMove.StartingRank = s1.rank;
-                            newMove.StartingFile = s1.file;
-                            newMove.TargetRank = s2.rank;
-                            newMove.TargetFile = s2.file;
+                            newMove.StartingRank = inputBoard.BoardSquares[startingSquare].rank;
+                            newMove.StartingFile = inputBoard.BoardSquares[startingSquare].file;
+                            newMove.TargetRank = inputBoard.BoardSquares[targetSquare].rank;
+                            newMove.TargetFile = inputBoard.BoardSquares[targetSquare].file;
                             newMove.HasThisPieceMovedBefore = inputBoard.BoardSquares[startingSquare].occupyingPiece.HasMoved;
                             newMove.SpecialCase = inputBoard.SpecialCase;
 
@@ -238,6 +238,22 @@ namespace ChessAttempt1
                                     inputBoard.BoardSquares[startingSquare + 1].hasPiece = true;
                                     inputBoard.BoardSquares[startingSquare + 1].occupyingPiece.HasMoved = true;
                                     inputBoard.BoardSquares[startingSquare + 3].hasPiece = false;
+                                }
+                                else if (inputBoard.SpecialCase == "en passant")
+                                {
+                                    //checks if en passant is moving right.  if not it must be left
+                                    if (targetSquare == startingSquare + 9 || targetSquare == startingSquare - 7)
+                                    {
+                                        //remove the piece to the right of the starting square, mark it as captured
+                                        newMove.CapturedPiece = inputBoard.BoardSquares[startingSquare + 1].occupyingPiece;
+                                        inputBoard.BoardSquares[startingSquare + 1].hasPiece = false;
+                                    }
+                                    else
+                                    {
+                                        //remove the piece to the left of the starting square, mark it as captured
+                                        newMove.CapturedPiece = inputBoard.BoardSquares[startingSquare - 1].occupyingPiece;
+                                        inputBoard.BoardSquares[startingSquare - 1].hasPiece = false;
+                                    }
                                 }
                                 else if (inputBoard.SpecialCase == "pawn promotion")
                                 {
@@ -343,7 +359,7 @@ namespace ChessAttempt1
                                 //redraws the board
                                 string outputMessage = $"moved {s1.occupyingPiece.PieceSymbol} from {s1.file}{s1.rank} to { s2.file}{ s2.rank}";
                                 //check for piece capture, add it to message
-                                if(newMove.WasTargetSquareEmpty == false)
+                                if(newMove.WasTargetSquareEmpty == false || newMove.SpecialCase == "en passant")
                                 {
                                     outputMessage = outputMessage + $" capturing {newMove.CapturedPiece.PieceSymbol}";
                                 }
@@ -360,6 +376,10 @@ namespace ChessAttempt1
                                 {
                                     char newPieceSymbol = s2.occupyingPiece.PieceSymbol;
                                     outputMessage = outputMessage + $" and promotes to {newPieceSymbol}";
+                                }
+                                else if (inputBoard.SpecialCase == "en passant")
+                                {
+                                    outputMessage = outputMessage + " by en passant";
                                 }
                                 Console.Clear();
                                 Console.WriteLine(outputMessage);
@@ -492,18 +512,25 @@ namespace ChessAttempt1
                     inputBoard.BoardSquares[moveToUndo.StartingSquare + 1].hasPiece = false;
                     inputBoard.BoardSquares[moveToUndo.StartingSquare + 3].hasPiece = true;
                 }
-                //if pawn promotion, need to undo the promotion and revert to a pawn with the hasmoved flag on
-                // turns out this isn't actually necessary, since the initial piece is stored in the move object
-                //and is reverted instead of the newly promoted piece.
-                //else if (moveToUndo.SpecialCase == "pawn promotion")
-                //{
-                //    //Piece replacementPawn = new Piece();
-                //    //string armyName = GetArmy(inputBoard, inputBoard.isWhiteTurn);
-                //    //replacementPawn.AddPiece("pawn", armyName, inputBoard.isWhiteTurn);
-                //    //replacementPawn.HasMoved = false;
-                //    //inputBoard.BoardSquares[moveToUndo.StartingSquare].occupyingPiece = replacementPawn;
-                //}
-                //**other special case (en passant, pawn promotion)
+                else if (moveToUndo.SpecialCase == "en passant")
+                {
+                    //if en passant, need to undo the removal of the pawn
+                    //first check which side the pawn was moving to from its original position
+                    bool didItMoveRight = false;
+                    didItMoveRight = (moveToUndo.StartingSquare - moveToUndo.TargetSquare == 7 ||
+                        moveToUndo.StartingSquare - moveToUndo.TargetSquare == -9);
+                    //then place the captured piece on that space and turn its has piece flag on
+                    if (didItMoveRight)
+                    {
+                        inputBoard.BoardSquares[moveToUndo.StartingSquare + 1].occupyingPiece = moveToUndo.CapturedPiece;
+                        inputBoard.BoardSquares[moveToUndo.StartingSquare + 1].hasPiece = true;
+                    }
+                    else
+                    {
+                        inputBoard.BoardSquares[moveToUndo.StartingSquare - 1].occupyingPiece = moveToUndo.CapturedPiece;
+                        inputBoard.BoardSquares[moveToUndo.StartingSquare - 1].hasPiece = true;
+                    }
+                }
             }
             
             //making sure we dont get an out of bounds error
@@ -543,7 +570,7 @@ namespace ChessAttempt1
                 }
                 //output modification for if the move captured an enemy piece
                 string capturingPiece = "";
-                if ( inputBoard.MoveList[i].WasTargetSquareEmpty == false )
+                if ( inputBoard.MoveList[i].WasTargetSquareEmpty == false || inputBoard.MoveList[i].SpecialCase == "en passant" )
                 {
                     capturingPiece = $" capturing {inputBoard.MoveList[i].CapturedPiece.PieceSymbol}";
                 }
