@@ -252,12 +252,14 @@ namespace ChessAttempt1
                                             //clear console, draw the board, request user input
                                             Console.Clear();
                                             DrawBoard(inputBoard);
-                                            Console.WriteLine("pawn has reached the edge of the board.  please promote to" +
+                                            Console.WriteLine("pawn has reached the edge of the board.  please promote to " +
                                                 "knight (k), bishop (b), rook (r), or queen (q)");
                                             string promotionInput = Console.ReadLine().ToLower();
                                             //make sure ther is some input to avoid out of bounds error
                                             if (promotionInput != "")
                                             {
+                                                //sets good input flag to true because the input was not blank
+                                                //it will be set back to false in the default case of bad input
                                                 goodPromotionInput = true;
                                                 //create a new piece to put on the square based on the inputs
                                                 Piece PromotedPiece = new Piece();
@@ -270,30 +272,34 @@ namespace ChessAttempt1
                                                     PromotedPiece.AddPiece("knight", currentArmy, inputBoard.isWhiteTurn);
                                                     PromotedPiece.HasMoved = true;
                                                     inputBoard.BoardSquares[outputSquareNumber].occupyingPiece = PromotedPiece;
+                                                    newMove.NewPiece = PromotedPiece;
                                                 }
                                                 else if (promotionInput[0] == 'b')
                                                 {
                                                     PromotedPiece.AddPiece("bishop", currentArmy, inputBoard.isWhiteTurn);
                                                     PromotedPiece.HasMoved = true;
                                                     inputBoard.BoardSquares[outputSquareNumber].occupyingPiece = PromotedPiece;
+                                                    newMove.NewPiece = PromotedPiece;
                                                 }
                                                 else if (promotionInput[0] == 'r')
                                                 {
                                                     PromotedPiece.AddPiece("rook", currentArmy, inputBoard.isWhiteTurn);
                                                     PromotedPiece.HasMoved = true;
                                                     inputBoard.BoardSquares[outputSquareNumber].occupyingPiece = PromotedPiece;
+                                                    newMove.NewPiece = PromotedPiece;
                                                 }
                                                 else if (promotionInput[0] == 'q')
                                                 {
                                                     PromotedPiece.AddPiece("queen", currentArmy, inputBoard.isWhiteTurn);
                                                     PromotedPiece.HasMoved = true;
                                                     inputBoard.BoardSquares[outputSquareNumber].occupyingPiece = PromotedPiece;
+                                                    newMove.NewPiece = PromotedPiece;
                                                 }
                                                 else
                                                 {
+                                                    //sets good input flag back to false because a proper choice was not selected
                                                     goodPromotionInput = false;
                                                 }
-
                                             }
                                         }
                                     }
@@ -336,6 +342,12 @@ namespace ChessAttempt1
                                 inputBoard.MoveList.Add(newMove);
                                 //redraws the board
                                 string outputMessage = $"moved {s1.occupyingPiece.PieceSymbol} from {s1.file}{s1.rank} to { s2.file}{ s2.rank}";
+                                //check for piece capture, add it to message
+                                if(newMove.WasTargetSquareEmpty == false)
+                                {
+                                    outputMessage = outputMessage + $" capturing {newMove.CapturedPiece.PieceSymbol}";
+                                }
+                                //check for special cases, add them to message
                                 if (inputBoard.SpecialCase == "castling queenside")
                                 {
                                     outputMessage = outputMessage + " castling queenside";
@@ -474,6 +486,17 @@ namespace ChessAttempt1
                     inputBoard.BoardSquares[moveToUndo.StartingSquare + 1].hasPiece = false;
                     inputBoard.BoardSquares[moveToUndo.StartingSquare + 3].hasPiece = true;
                 }
+                //if pawn promotion, need to undo the promotion and revert to a pawn with the hasmoved flag on
+                // turns out this isn't actually necessary, since the initial piece is stored in the move object
+                //and is reverted instead of the newly promoted piece.
+                //else if (moveToUndo.SpecialCase == "pawn promotion")
+                //{
+                //    //Piece replacementPawn = new Piece();
+                //    //string armyName = GetArmy(inputBoard, inputBoard.isWhiteTurn);
+                //    //replacementPawn.AddPiece("pawn", armyName, inputBoard.isWhiteTurn);
+                //    //replacementPawn.HasMoved = false;
+                //    //inputBoard.BoardSquares[moveToUndo.StartingSquare].occupyingPiece = replacementPawn;
+                //}
                 //**other special case (en passant, pawn promotion)
             }
             
@@ -518,10 +541,32 @@ namespace ChessAttempt1
                 {
                     capturingPiece = $" capturing {inputBoard.MoveList[i].CapturedPiece.PieceSymbol}";
                 }
+                //output modification for if the move was a special case move
+                string specialCase = "";
+                if (inputBoard.MoveList[i].SpecialCase != "none")
+                {
+                    if (inputBoard.MoveList[i].SpecialCase == "castling queenside")
+                    {
+                        specialCase = " castling queenside";
+                    }
+                    else if (inputBoard.MoveList[i].SpecialCase == "castling kingside")
+                    {
+                        specialCase = " castling kingside";
+                    }
+                    else if (inputBoard.MoveList[i].SpecialCase == "pawn promotion")
+                    {
+                        specialCase = $" and promotes to {inputBoard.MoveList[i].NewPiece.PieceSymbol}";
+                    }
+                    else if (inputBoard.MoveList[i].SpecialCase == "en passant")
+                    {
+                        specialCase = " via en passant";
+                    }
+                }
+
                 //output display
                 Console.WriteLine($"{inputBoard.MoveList[i].MovingPiece.PieceSymbol} {inputBoard.MoveList[i].StartingFile}{inputBoard.MoveList[i].StartingRank}" +
                     $" to {inputBoard.MoveList[i].TargetFile}{inputBoard.MoveList[i].TargetRank}" +
-                    $"{capturingPiece}{causingCheck}.");
+                    $"{capturingPiece}{specialCase}{causingCheck}.");
             }
             //get user confirmation before displaying the board again
             Console.WriteLine("Press enter to continue");
