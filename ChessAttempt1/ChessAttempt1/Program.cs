@@ -258,6 +258,20 @@ namespace ChessAttempt1
                                 {
                                     outputMessage = outputMessage + " by en passant";
                                 }
+
+                                //adding a check for if the opponent has legal moves here.  will need to flesh this out,
+                                // just making sure it works for now
+                                //turn off the special case flag so it doesn't effect opponent move checks
+                                inputBoard.SpecialCase = "none";
+                                bool opponentCanMove = true;
+                                opponentCanMove = PlayerHasLegalMoves(inputBoard, inputBoard.isWhiteTurn);
+                                if (opponentCanMove == false)
+                                {
+                                    inputBoard.isGameOver = true;
+                                }
+
+                                //end addition
+
                                 Console.Clear();
                                 Console.WriteLine(outputMessage);
                                 DrawBoard(inputBoard);
@@ -1449,11 +1463,11 @@ namespace ChessAttempt1
                             //make the move on the board, skipping pawn promotion step
                             Move potentialMove = CreateMoveAndUpdateBoard(inputBoard, selectedSquare, i, false);
                             //determine if the king of the color of the moved piece is in check
-                            bool confirmLegalMove = IsKingInCheck(inputBoard, inputBoard.BoardSquares[i].occupyingPiece.IsWhitePiece);
+                            bool wouldKingBeInCheck = IsKingInCheck(inputBoard, inputBoard.BoardSquares[i].occupyingPiece.IsWhitePiece);
                             //undo the move, resetting the board to the state it was in before making these checks
                             UndoMove(inputBoard, potentialMove);
                             //if the move would not put the allied king in check, then we have found a legal move for this piece and return true
-                            if (confirmLegalMove)
+                            if (wouldKingBeInCheck == false)
                             {
                                 return true;
                             }
