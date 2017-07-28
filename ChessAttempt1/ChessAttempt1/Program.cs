@@ -1416,10 +1416,27 @@ namespace ChessAttempt1
             return false;
         }
 
-        //***checking if a piece on the board can legally make a move 
-        private static bool PieceHasLegalMoves(Board inputBoard, Piece selectedPiece)
+        //***checking if the piece on a given square on the board can legally make a move 
+        private static bool PieceHasLegalMoves(Board inputBoard, int selectedSquare)
         {
-            //incomplete
+            //confirm that square has a piece
+            if (inputBoard.BoardSquares[selectedSquare].hasPiece)
+            {
+                //loop through all squares on the board.  if the piece can move to any of them, return true.
+                for (int i = 0; i <= 63; i++)
+                {
+                    //make sure we aren't trying to move to the same square
+                    if (i != selectedSquare)
+                    {
+                        bool foundALegalMoveYet = false;
+                        //check if the piece can legally move to the square that we're checking in the loop
+                        foundALegalMoveYet = CheckLegalMove(inputBoard, selectedSquare, i);
+                        //check if this move would leave allied king in check
+                        //
+                    }
+                }
+            }
+            //otherwise
             return false;
         }
 
