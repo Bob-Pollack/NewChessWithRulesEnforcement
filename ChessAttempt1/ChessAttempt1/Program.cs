@@ -196,131 +196,7 @@ namespace ChessAttempt1
                             //check for special cases (castling, pawn promotion, en passant) and set the flag if any has triggered
                             UpdateSpecialCaseFlag(inputBoard, startingSquare, targetSquare);
                             //makes a move object to track everything needed to make, log, or undo the move
-                            //***possibly break this out into seperate function
-                            Move newMove = new Move();
-                            newMove.StartingSquare = startingSquare;
-                            newMove.TargetSquare = targetSquare;
-                            newMove.MovingPiece = inputBoard.BoardSquares[startingSquare].occupyingPiece;
-                            newMove.WasTargetSquareEmpty = !inputBoard.BoardSquares[targetSquare].hasPiece;
-                            if (inputBoard.BoardSquares[targetSquare].hasPiece)
-                            {
-                                newMove.CapturedPiece = inputBoard.BoardSquares[targetSquare].occupyingPiece;
-                            }
-                            newMove.StartingRank = inputBoard.BoardSquares[startingSquare].rank;
-                            newMove.StartingFile = inputBoard.BoardSquares[startingSquare].file;
-                            newMove.TargetRank = inputBoard.BoardSquares[targetSquare].rank;
-                            newMove.TargetFile = inputBoard.BoardSquares[targetSquare].file;
-                            newMove.HasThisPieceMovedBefore = inputBoard.BoardSquares[startingSquare].occupyingPiece.HasMoved;
-                            newMove.SpecialCase = inputBoard.SpecialCase;
-
-                            //moves the piece from the starting square to the target square.
-                            //***may need to store the recently captured piece somehow for future use with the captured pieces list
-                            inputBoard.BoardSquares[targetSquare].occupyingPiece = s1.occupyingPiece;
-                            inputBoard.BoardSquares[targetSquare].hasPiece = true;
-                            inputBoard.BoardSquares[targetSquare].occupyingPiece.HasMoved = true;
-                            inputBoard.BoardSquares[startingSquare].hasPiece = false;
-                            if (inputBoard.SpecialCase != "none")
-                            {
-                                //run through special cases that have movement rules
-                                if (inputBoard.SpecialCase == "castling queenside")
-                                {
-                                    //move the rook from the queenside corner to the right of the king's new position
-                                    inputBoard.BoardSquares[startingSquare - 1].occupyingPiece =
-                                        inputBoard.BoardSquares[startingSquare - 4].occupyingPiece;
-                                    inputBoard.BoardSquares[startingSquare - 1].hasPiece = true;
-                                    inputBoard.BoardSquares[startingSquare - 1].occupyingPiece.HasMoved = true;
-                                    inputBoard.BoardSquares[startingSquare - 4].hasPiece = false;
-                                }
-                                else if (inputBoard.SpecialCase == "castling kingside")
-                                {
-                                    inputBoard.BoardSquares[startingSquare + 1].occupyingPiece =
-                                       inputBoard.BoardSquares[startingSquare + 3].occupyingPiece;
-                                    inputBoard.BoardSquares[startingSquare + 1].hasPiece = true;
-                                    inputBoard.BoardSquares[startingSquare + 1].occupyingPiece.HasMoved = true;
-                                    inputBoard.BoardSquares[startingSquare + 3].hasPiece = false;
-                                }
-                                else if (inputBoard.SpecialCase == "en passant")
-                                {
-                                    //checks if en passant is moving right.  if not it must be left
-                                    if (targetSquare == startingSquare + 9 || targetSquare == startingSquare - 7)
-                                    {
-                                        //remove the piece to the right of the starting square, mark it as captured
-                                        newMove.CapturedPiece = inputBoard.BoardSquares[startingSquare + 1].occupyingPiece;
-                                        inputBoard.BoardSquares[startingSquare + 1].hasPiece = false;
-                                    }
-                                    else
-                                    {
-                                        //remove the piece to the left of the starting square, mark it as captured
-                                        newMove.CapturedPiece = inputBoard.BoardSquares[startingSquare - 1].occupyingPiece;
-                                        inputBoard.BoardSquares[startingSquare - 1].hasPiece = false;
-                                    }
-                                }
-                                else if (inputBoard.SpecialCase == "pawn promotion")
-                                {
-                                    //check if this move leaves allied king in check,
-                                    //otherwise we would have to undo after having player input for the promotion
-                                    if (IsKingInCheck(inputBoard, inputBoard.isWhiteTurn) == false)
-                                    {
-                                        //loop until we have proper user input
-                                        bool goodPromotionInput = false;
-                                        while (goodPromotionInput == false)
-                                        {
-                                            //clear console, draw the board, request user input
-                                            Console.Clear();
-                                            DrawBoard(inputBoard);
-                                            Console.WriteLine("pawn has reached the edge of the board.  please promote to " +
-                                                "knight (k), bishop (b), rook (r), or queen (q)");
-                                            string promotionInput = Console.ReadLine().ToLower();
-                                            //make sure ther is some input to avoid out of bounds error
-                                            if (promotionInput != "")
-                                            {
-                                                //sets good input flag to true because the input was not blank
-                                                //it will be set back to false in the default case of bad input
-                                                goodPromotionInput = true;
-                                                //create a new piece to put on the square based on the inputs
-                                                Piece PromotedPiece = new Piece();
-                                                string currentArmy = GetArmy(inputBoard, inputBoard.isWhiteTurn);
-
-                                                //check first character of user input for proper letter
-                                                if (promotionInput[0] == 'k')
-                                                {
-                                                    //fills in details for the new piece, then places it on the board replacing the pawn
-                                                    PromotedPiece.AddPiece("knight", currentArmy, inputBoard.isWhiteTurn);
-                                                    PromotedPiece.HasMoved = true;
-                                                    inputBoard.BoardSquares[targetSquare].occupyingPiece = PromotedPiece;
-                                                    newMove.NewPiece = PromotedPiece;
-                                                }
-                                                else if (promotionInput[0] == 'b')
-                                                {
-                                                    PromotedPiece.AddPiece("bishop", currentArmy, inputBoard.isWhiteTurn);
-                                                    PromotedPiece.HasMoved = true;
-                                                    inputBoard.BoardSquares[targetSquare].occupyingPiece = PromotedPiece;
-                                                    newMove.NewPiece = PromotedPiece;
-                                                }
-                                                else if (promotionInput[0] == 'r')
-                                                {
-                                                    PromotedPiece.AddPiece("rook", currentArmy, inputBoard.isWhiteTurn);
-                                                    PromotedPiece.HasMoved = true;
-                                                    inputBoard.BoardSquares[targetSquare].occupyingPiece = PromotedPiece;
-                                                    newMove.NewPiece = PromotedPiece;
-                                                }
-                                                else if (promotionInput[0] == 'q')
-                                                {
-                                                    PromotedPiece.AddPiece("queen", currentArmy, inputBoard.isWhiteTurn);
-                                                    PromotedPiece.HasMoved = true;
-                                                    inputBoard.BoardSquares[targetSquare].occupyingPiece = PromotedPiece;
-                                                    newMove.NewPiece = PromotedPiece;
-                                                }
-                                                else
-                                                {
-                                                    //sets good input flag back to false because a proper choice was not selected
-                                                    goodPromotionInput = false;
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
+                            Move newMove = CreateMoveAndUpdateBoard(inputBoard, startingSquare, targetSquare, true);
 
                             //determine if the player put or left their king in check (illegal move) or put the opposing king in check
                             bool didIJustPutMyOwnKingInCheck = IsKingInCheck(inputBoard, inputBoard.isWhiteTurn);
@@ -359,7 +235,7 @@ namespace ChessAttempt1
                                 //redraws the board
                                 string outputMessage = $"moved {s1.occupyingPiece.PieceSymbol} from {s1.file}{s1.rank} to { s2.file}{ s2.rank}";
                                 //check for piece capture, add it to message
-                                if(newMove.WasTargetSquareEmpty == false || newMove.SpecialCase == "en passant")
+                                if (newMove.WasTargetSquareEmpty == false || newMove.SpecialCase == "en passant")
                                 {
                                     outputMessage = outputMessage + $" capturing {newMove.CapturedPiece.PieceSymbol}";
                                 }
@@ -426,6 +302,138 @@ namespace ChessAttempt1
                     DrawBoard(inputBoard);
                 }
             }
+        }
+        //update the board and return a move object with the details of the update
+        private static Move CreateMoveAndUpdateBoard(Board inputBoard, int startingSquare, int targetSquare, bool realTurn)
+        {
+            //create a move object, fills it with most required information
+            Move newMove = new Move();
+            newMove.StartingSquare = startingSquare;
+            newMove.TargetSquare = targetSquare;
+            newMove.MovingPiece = inputBoard.BoardSquares[startingSquare].occupyingPiece;
+            newMove.WasTargetSquareEmpty = !inputBoard.BoardSquares[targetSquare].hasPiece;
+            if (inputBoard.BoardSquares[targetSquare].hasPiece)
+            {
+                newMove.CapturedPiece = inputBoard.BoardSquares[targetSquare].occupyingPiece;
+            }
+            newMove.StartingRank = inputBoard.BoardSquares[startingSquare].rank;
+            newMove.StartingFile = inputBoard.BoardSquares[startingSquare].file;
+            newMove.TargetRank = inputBoard.BoardSquares[targetSquare].rank;
+            newMove.TargetFile = inputBoard.BoardSquares[targetSquare].file;
+            newMove.HasThisPieceMovedBefore = inputBoard.BoardSquares[startingSquare].occupyingPiece.HasMoved;
+            newMove.SpecialCase = inputBoard.SpecialCase;
+
+            //moves the piece from the starting square to the target square.
+            inputBoard.BoardSquares[targetSquare].occupyingPiece = inputBoard.BoardSquares[startingSquare].occupyingPiece;
+            inputBoard.BoardSquares[targetSquare].hasPiece = true;
+            inputBoard.BoardSquares[targetSquare].occupyingPiece.HasMoved = true;
+            inputBoard.BoardSquares[startingSquare].hasPiece = false;
+            if (inputBoard.SpecialCase != "none")
+            {
+                //run through special cases that have movement rules
+                if (inputBoard.SpecialCase == "castling queenside")
+                {
+                    //move the rook from the queenside corner to the right of the king's new position
+                    inputBoard.BoardSquares[startingSquare - 1].occupyingPiece =
+                        inputBoard.BoardSquares[startingSquare - 4].occupyingPiece;
+                    inputBoard.BoardSquares[startingSquare - 1].hasPiece = true;
+                    inputBoard.BoardSquares[startingSquare - 1].occupyingPiece.HasMoved = true;
+                    inputBoard.BoardSquares[startingSquare - 4].hasPiece = false;
+                }
+                else if (inputBoard.SpecialCase == "castling kingside")
+                {
+                    inputBoard.BoardSquares[startingSquare + 1].occupyingPiece =
+                       inputBoard.BoardSquares[startingSquare + 3].occupyingPiece;
+                    inputBoard.BoardSquares[startingSquare + 1].hasPiece = true;
+                    inputBoard.BoardSquares[startingSquare + 1].occupyingPiece.HasMoved = true;
+                    inputBoard.BoardSquares[startingSquare + 3].hasPiece = false;
+                }
+                else if (inputBoard.SpecialCase == "en passant")
+                {
+                    //checks if en passant is moving right.  if not it must be left
+                    if (targetSquare == startingSquare + 9 || targetSquare == startingSquare - 7)
+                    {
+                        //remove the piece to the right of the starting square, mark it as captured
+                        newMove.CapturedPiece = inputBoard.BoardSquares[startingSquare + 1].occupyingPiece;
+                        inputBoard.BoardSquares[startingSquare + 1].hasPiece = false;
+                    }
+                    else
+                    {
+                        //remove the piece to the left of the starting square, mark it as captured
+                        newMove.CapturedPiece = inputBoard.BoardSquares[startingSquare - 1].occupyingPiece;
+                        inputBoard.BoardSquares[startingSquare - 1].hasPiece = false;
+                    }
+                }
+                //checking for pawn promotion.  Will ONLY trigger if realTurn boolean is true, to avoid requiring player input 
+                //when calling this function while checking if a piece has any legal moves.
+                else if (inputBoard.SpecialCase == "pawn promotion" && realTurn == true)
+                {
+                    //check if this move leaves allied king in check,
+                    //otherwise we would have to undo after having player input for the promotion
+                    if (IsKingInCheck(inputBoard, inputBoard.isWhiteTurn) == false)
+                    {
+                        //loop until we have proper user input
+                        bool goodPromotionInput = false;
+                        while (goodPromotionInput == false)
+                        {
+                            //clear console, draw the board, request user input
+                            Console.Clear();
+                            DrawBoard(inputBoard);
+                            Console.WriteLine("pawn has reached the edge of the board.  please promote to " +
+                                "knight (k), bishop (b), rook (r), or queen (q)");
+                            string promotionInput = Console.ReadLine().ToLower();
+                            //make sure ther is some input to avoid out of bounds error
+                            if (promotionInput != "")
+                            {
+                                //sets good input flag to true because the input was not blank
+                                //it will be set back to false in the default case of bad input
+                                goodPromotionInput = true;
+                                //create a new piece to put on the square based on the inputs
+                                Piece PromotedPiece = new Piece();
+                                string currentArmy = GetArmy(inputBoard, inputBoard.isWhiteTurn);
+
+                                //check first character of user input for proper letter
+                                if (promotionInput[0] == 'k')
+                                {
+                                    //fills in details for the new piece, then places it on the board replacing the pawn
+                                    PromotedPiece.AddPiece("knight", currentArmy, inputBoard.isWhiteTurn);
+                                    PromotedPiece.HasMoved = true;
+                                    inputBoard.BoardSquares[targetSquare].occupyingPiece = PromotedPiece;
+                                    newMove.NewPiece = PromotedPiece;
+                                }
+                                else if (promotionInput[0] == 'b')
+                                {
+                                    PromotedPiece.AddPiece("bishop", currentArmy, inputBoard.isWhiteTurn);
+                                    PromotedPiece.HasMoved = true;
+                                    inputBoard.BoardSquares[targetSquare].occupyingPiece = PromotedPiece;
+                                    newMove.NewPiece = PromotedPiece;
+                                }
+                                else if (promotionInput[0] == 'r')
+                                {
+                                    PromotedPiece.AddPiece("rook", currentArmy, inputBoard.isWhiteTurn);
+                                    PromotedPiece.HasMoved = true;
+                                    inputBoard.BoardSquares[targetSquare].occupyingPiece = PromotedPiece;
+                                    newMove.NewPiece = PromotedPiece;
+                                }
+                                else if (promotionInput[0] == 'q')
+                                {
+                                    PromotedPiece.AddPiece("queen", currentArmy, inputBoard.isWhiteTurn);
+                                    PromotedPiece.HasMoved = true;
+                                    inputBoard.BoardSquares[targetSquare].occupyingPiece = PromotedPiece;
+                                    newMove.NewPiece = PromotedPiece;
+                                }
+                                else
+                                {
+                                    //sets good input flag back to false because a proper choice was not selected
+                                    goodPromotionInput = false;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            return newMove;
         }
 
         private static void UpdateSpecialCaseFlag(Board inputBoard, int startingSquare, int targetSquare)
@@ -1416,7 +1424,7 @@ namespace ChessAttempt1
             return false;
         }
 
-        //***checking if the piece on a given square on the board can legally make a move 
+        //checking if the piece on a given square on the board can legally make a move 
         private static bool PieceHasLegalMoves(Board inputBoard, int selectedSquare)
         {
             //confirm that square has a piece
@@ -1432,7 +1440,21 @@ namespace ChessAttempt1
                         //check if the piece can legally move to the square that we're checking in the loop
                         foundALegalMoveYet = CheckLegalMove(inputBoard, selectedSquare, i);
                         //check if this move would leave allied king in check
-                        //
+                        if (foundALegalMoveYet)
+                        {
+                            //make the move on the board, skipping pawn promotion step
+                            Move potentialMove = CreateMoveAndUpdateBoard(inputBoard, selectedSquare, i, false);
+                            //determine if the king of the color of the moved piece is in check
+                            bool confirmLegalMove = IsKingInCheck(inputBoard, inputBoard.BoardSquares[i].occupyingPiece.IsWhitePiece);
+                            //undo the move, resetting the board to the state it was in before making these checks
+                            UndoMove(inputBoard, potentialMove);
+                            //if the move would not put the allied king in check, then we have found a legal move for this piece and return true
+                            if (confirmLegalMove)
+                            {
+                                return true;
+                            }
+
+                        }
                     }
                 }
             }
@@ -1443,6 +1465,8 @@ namespace ChessAttempt1
         //***checking if a player has any pieces that have legal moves.
         private static bool PlayerHasLegalMoves(Board inputBoard, bool isWhiteArmy)
         {
+
+
             //incomplete
             return false;
         }
