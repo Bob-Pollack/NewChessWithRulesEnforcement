@@ -221,7 +221,7 @@ namespace ChessAttempt1
                             inputBoard.BoardSquares[startingSquare].hasPiece = false;
                             if (inputBoard.SpecialCase != "none")
                             {
-                                //***special rules for castling, en passant, and pawn promotion should go here
+                                //run through special cases that have movement rules
                                 if (inputBoard.SpecialCase == "castling queenside")
                                 {
                                     //move the rook from the queenside corner to the right of the king's new position
@@ -431,10 +431,30 @@ namespace ChessAttempt1
         private static void UpdateSpecialCaseFlag(Board inputBoard, int startingSquare, int targetSquare)
         {
             //check if a pawn just made a double move.  this flag is only relevant when checking for en passant on the next move.
+            //updating this to have it only trigger when moving next to an enemy pawn, thus allowing en passant rights.
+            //this change will be relevant for determining threefold repetitions.
             if (inputBoard.BoardSquares[startingSquare].occupyingPiece.PieceName == "pawn" &&
                 (startingSquare == targetSquare + 16 || startingSquare == targetSquare - 16))
             {
-                inputBoard.SpecialCase = "pawn double move";
+                if (inputBoard.BoardSquares[targetSquare + 1].hasPiece == true 
+                    && inputBoard.BoardSquares[targetSquare].file != "h")
+                {
+                    if (inputBoard.BoardSquares[targetSquare + 1].occupyingPiece.IsWhitePiece != inputBoard.isWhiteTurn
+                        && inputBoard.BoardSquares[targetSquare + 1].occupyingPiece.PieceName == "pawn")
+                    {
+                        inputBoard.SpecialCase = "pawn double move";
+                    }
+                }
+                else if (inputBoard.BoardSquares[targetSquare - 1].hasPiece == true
+                         && inputBoard.BoardSquares[targetSquare].file != "a")
+                {
+                    if (inputBoard.BoardSquares[targetSquare - 1].occupyingPiece.IsWhitePiece != inputBoard.isWhiteTurn
+                        && inputBoard.BoardSquares[targetSquare - 1].occupyingPiece.PieceName == "pawn")
+                    {
+                        inputBoard.SpecialCase = "pawn double move";
+                    }
+                }
+
             }
             //check if the moved piece is a pawn and if it reached the back row.  if so, trip the pawn promotion flag
             else if (inputBoard.BoardSquares[startingSquare].occupyingPiece.PieceName == "pawn" && 
@@ -1395,11 +1415,24 @@ namespace ChessAttempt1
             }
             return false;
         }
+
+        //***checking if a piece on the board can legally make a move 
+        private static bool PieceHasLegalMoves(Board inputBoard, Piece selectedPiece)
+        {
+            //incomplete
+            return false;
+        }
+
+        //***checking if a player has any pieces that have legal moves.
+        private static bool PlayerHasLegalMoves(Board inputBoard, bool isWhiteArmy)
+        {
+            //incomplete
+            return false;
+        }
     }
 }
 
 //rules not yet fully implemented
-    //en passant
     //end game 
         //checking for no legal moves (stalemate or checkmate)
             //if a player on his turn has no legal moves and is in check, they lose the game by checkmate
