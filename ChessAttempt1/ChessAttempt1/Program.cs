@@ -29,6 +29,7 @@ namespace ChessAttempt1
 
         }
 
+        //gets user input and has the player take a turn
         private static void TakeTurn(Board inputBoard)
         {
             //this boolean tracks the turn and only flips when a legal move has been confirmed 
@@ -303,6 +304,7 @@ namespace ChessAttempt1
                 }
             }
         }
+
         //update the board and return a move object with the details of the update
         private static Move CreateMoveAndUpdateBoard(Board inputBoard, int startingSquare, int targetSquare, bool realTurn)
         {
@@ -436,6 +438,7 @@ namespace ChessAttempt1
             return newMove;
         }
 
+        //updates the special case flag on the board for specific move circumstances
         private static void UpdateSpecialCaseFlag(Board inputBoard, int startingSquare, int targetSquare)
         {
             //check if a pawn just made a double move.  this flag is only relevant when checking for en passant on the next move.
@@ -492,6 +495,7 @@ namespace ChessAttempt1
             }
         }
 
+        //method to get the army name of the pieces of a specific color
         private static string GetArmy(Board inputBoard, bool isWhiteArmy)
         {
             //find any piece of the proper army color, return its army parameter
@@ -508,6 +512,7 @@ namespace ChessAttempt1
             return "error: no piece of that color exists on the board.  this text should never appear.";
         }
 
+        //this function takes the move and undoes its effect on the board
         private static void UndoMove(Board inputBoard, Move moveToUndo)
         {
             //uses the move we've received to undo the board to the previous state
@@ -689,8 +694,7 @@ namespace ChessAttempt1
             Console.WriteLine();
         }
 
-        //returns whether the selected piece can move to the target square
-        //this does NOT check whether this move would leave the player's king in check.
+        //returns whether the selected piece can move to the target square, ignoring threats to its own king
         //this assumes that we've already confirmed that a piece has been selected that matches the color of the player whose turn it is
         private static bool CheckLegalMove(Board inputBoard, int startingSquare, int targetSquare)
         {
@@ -702,8 +706,7 @@ namespace ChessAttempt1
                     (inputBoard.BoardSquares[startingSquare].occupyingPiece.IsWhitePiece ==
                     inputBoard.BoardSquares[targetSquare].occupyingPiece.IsWhitePiece))
                 {
-                    //removed for testing purposes temporarily
-                    //return false;
+                    return false;
                 }
 
                 //standard rook
@@ -1384,6 +1387,7 @@ namespace ChessAttempt1
             return false; ;
         }
 
+        //given the state of the board, determines whether the king of the chosen color is in check.
         private static bool IsKingInCheck(Board inputBoard, bool isWhiteKing)
         {
             //find square of king of proper color on board
@@ -1462,12 +1466,28 @@ namespace ChessAttempt1
             return false;
         }
 
-        //***checking if a player has any pieces that have legal moves.
+        //checking if a player has any pieces that have legal moves.
         private static bool PlayerHasLegalMoves(Board inputBoard, bool isWhiteArmy)
         {
-
-
-            //incomplete
+            //loop through every square on the board
+            for (int i = 0; i <= 63; i++)
+            {
+                //confirm that the square has a piece on it
+                if (inputBoard.BoardSquares[i].hasPiece)
+                {
+                    //confirm that the piece on the square is the same color as the army we're checking
+                    if (inputBoard.BoardSquares[i].occupyingPiece.IsWhitePiece == isWhiteArmy)
+                    {
+                        //if the piece has a legal move, then the player must have a legal move
+                        bool legalMoveCheck = PieceHasLegalMoves(inputBoard, i);
+                        if (legalMoveCheck)
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+            //otherwise
             return false;
         }
     }
