@@ -261,12 +261,40 @@ namespace ChessAttempt1
 
                                 //adding a check for if the opponent has legal moves here.  will need to flesh this out,
                                 // just making sure it works for now
-                                //turn off the special case flag so it doesn't effect opponent move checks
+                                //turn off the special case flag so it doesn't effect opponent move checks                                
                                 inputBoard.SpecialCase = "none";
                                 bool opponentCanMove = true;
                                 opponentCanMove = PlayerHasLegalMoves(inputBoard, inputBoard.isWhiteTurn);
                                 if (opponentCanMove == false)
                                 {
+                                    //set colors of the pieces for the output message
+                                    string playerWhoCannotMove = "black";
+                                    string playerWhoJustMoved = "white";
+                                    if (inputBoard.isWhiteTurn)
+                                    {
+                                        playerWhoCannotMove = "white";
+                                        playerWhoJustMoved = "black";
+                                    }
+                                    //determine win vs stalemate
+                                    bool checkmate = false;
+                                    if (!inputBoard.isWhiteTurn && inputBoard.blackInCheck)
+                                    {
+                                        checkmate = true;
+                                    }
+                                    else if (inputBoard.isWhiteTurn && inputBoard.whiteInCheck)
+                                    {
+                                        checkmate = true;
+                                    }
+                                    //display the message based on end game condition
+                                    if (checkmate)
+                                    {
+                                        inputBoard.winMessage = $"{playerWhoCannotMove} is in check and has no legal moves.  As a result, {playerWhoJustMoved} wins by checkmate.";
+                                    }
+                                    else
+                                    {
+                                        inputBoard.winMessage = $"{playerWhoCannotMove} has no legal moves. As a result, the game ends in a draw by stalemate";
+                                    }
+                                    //set the flag for the loop to end because the game is now over
                                     inputBoard.isGameOver = true;
                                 }
 
