@@ -313,9 +313,11 @@ namespace ChessAttempt1
                                     outputMessage = outputMessage + " by en passant";
                                 }
                                 //50-move rule implementation:  if FiftyMoveRuleCounter > 100, players may declare draw and end the game
-                                if (inputBoard.FiftyMoveRuleCounter > 5)
+                                if (inputBoard.FiftyMoveRuleCounter > 100)
                                 {
                                     outputMessage = outputMessage + ".  50 move rule invoked: players may now declare a draw on their turn.";
+                                    //***incomplete: need to update the turn's user input to trigger a draw in this case
+                                    //***incomplete: need to add instead a game ending message here and trigger automatic game end if the counter passes 150.
                                 }
                                 //adding a check for if the opponent has legal moves here.  will need to flesh this out,
                                 // just making sure it works for now
