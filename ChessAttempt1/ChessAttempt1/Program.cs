@@ -135,6 +135,7 @@ namespace ChessAttempt1
                         Console.WriteLine("Resuming game");
                         DrawBoard(inputBoard);
                     }
+                    //special case, if you type "undo" at the start, it will undo the last move played
                     else if (inputRow == "undo")
                     {
                         Console.Clear();
@@ -150,6 +151,50 @@ namespace ChessAttempt1
                             DrawBoard(inputBoard);
                         }
                     }
+                    //special case, if a player resigns, end the game with the opponent winning.
+                    else if (inputRow == "resign")
+                    {
+                        //break out of the loop, update game over and win message flags
+                        goodInput = true;
+                        string resigningPlayer = "black";
+                        string winningPlayer = "white";
+                        if (inputBoard.isWhiteTurn)
+                        {
+                            resigningPlayer = "white";
+                            winningPlayer = "black";
+                        }
+                        inputBoard.isGameOver = true;
+                        inputBoard.winMessage = $"{resigningPlayer} resigns.  {winningPlayer} wins!";
+                    }
+                    //special case, a player may offer a draw.  opponent gets an opportunity to accept, and if so, game ends in a draw.
+                    else if (inputRow == "offer draw")
+                    {                        
+                        string offeringPlayer = "black";
+                        string toAccept = "white";
+                        if (inputBoard.isWhiteTurn)
+                        {
+                            offeringPlayer = "white";
+                            toAccept = "black";
+                        }
+                        //write out draw offer, then get user input.  if first character of user input is "y", draw accepted
+                        Console.WriteLine($"{offeringPlayer} offers a draw.  {toAccept} do you accept the draw?  y/n");
+                        string drawReply = Console.ReadLine().ToLower();
+                        //make sure blank input doesn't crash anything
+                        if (drawReply != "")
+                        {
+                            if (drawReply[0] == 'y')
+                            {
+                                goodInput = true;
+                                inputBoard.isGameOver = true;
+                                inputBoard.winMessage = $"{offeringPlayer} offered a draw and was accepted.";
+                            }
+                            else
+                            {
+                                Console.WriteLine($"{toAccept} declined the draw, resuming game");
+                            }
+                        }
+                    }
+
                     //confirms that legal user input has been 
                     else if (inputColumnNumber != 0 && outputColumnNumber != 0
                         && inputRowNumber > 0 && outputRowNumber > 0
@@ -163,6 +208,11 @@ namespace ChessAttempt1
                         Console.WriteLine("Bad input, try again");
                         DrawBoard(inputBoard);
                     }
+                }
+                //if game over flag has been triggered, break out of the loop here
+                if (inputBoard.isGameOver)
+                {
+                    break;
                 }
 
                 //get the square on the board that the player chose as their square with their piece to move
@@ -489,7 +539,7 @@ namespace ChessAttempt1
             if (inputBoard.BoardSquares[startingSquare].occupyingPiece.PieceName == "pawn" &&
                 (startingSquare == targetSquare + 16 || startingSquare == targetSquare - 16))
             {
-                if (inputBoard.BoardSquares[targetSquare + 1].hasPiece == true 
+                if (inputBoard.BoardSquares[targetSquare + 1].hasPiece == true
                     && inputBoard.BoardSquares[targetSquare].file != "h")
                 {
                     if (inputBoard.BoardSquares[targetSquare + 1].occupyingPiece.IsWhitePiece != inputBoard.isWhiteTurn
@@ -510,26 +560,26 @@ namespace ChessAttempt1
 
             }
             //check if the moved piece is a pawn and if it reached the back row.  if so, trip the pawn promotion flag
-            else if (inputBoard.BoardSquares[startingSquare].occupyingPiece.PieceName == "pawn" && 
+            else if (inputBoard.BoardSquares[startingSquare].occupyingPiece.PieceName == "pawn" &&
                 (inputBoard.BoardSquares[targetSquare].rank == "8" || inputBoard.BoardSquares[targetSquare].rank == "1"))
             {
                 inputBoard.SpecialCase = "pawn promotion";
             }
             //check if the moved piece is a king and it moved right two spaces.  if so, trip the castlign kingside flag
             else if (inputBoard.BoardSquares[startingSquare].occupyingPiece.PieceName == "king" &&
-                targetSquare == startingSquare + 2 )
+                targetSquare == startingSquare + 2)
             {
                 inputBoard.SpecialCase = "castling kingside";
             }
             //check if the moved piece is a king and it moved left two spaces.  if so, trip the castling queenside flag
             else if (inputBoard.BoardSquares[startingSquare].occupyingPiece.PieceName == "king" &&
-                targetSquare == startingSquare - 2 )
+                targetSquare == startingSquare - 2)
             {
                 inputBoard.SpecialCase = "castling queenside";
             }
             //check if the moved piece is a pawn moving diagonally onto an unoccupied space.  if so, trip the en passant flag
             else if (inputBoard.BoardSquares[startingSquare].occupyingPiece.PieceName == "pawn" &&
-                (targetSquare == startingSquare + 7 || targetSquare == startingSquare + 9 
+                (targetSquare == startingSquare + 7 || targetSquare == startingSquare + 9
                 || targetSquare == startingSquare - 7 || targetSquare == startingSquare - 9) &&
                 inputBoard.BoardSquares[targetSquare].hasPiece == false)
             {
@@ -541,11 +591,11 @@ namespace ChessAttempt1
         private static string GetArmy(Board inputBoard, bool isWhiteArmy)
         {
             //find any piece of the proper army color, return its army parameter
-            for(int i = 0; i <= 63; i++)
+            for (int i = 0; i <= 63; i++)
             {
-                if(inputBoard.BoardSquares[i].hasPiece)
+                if (inputBoard.BoardSquares[i].hasPiece)
                 {
-                    if(inputBoard.BoardSquares[i].occupyingPiece.IsWhitePiece == isWhiteArmy)
+                    if (inputBoard.BoardSquares[i].occupyingPiece.IsWhitePiece == isWhiteArmy)
                     {
                         return inputBoard.BoardSquares[i].occupyingPiece.Army;
                     }
@@ -607,9 +657,9 @@ namespace ChessAttempt1
                     }
                 }
             }
-            
+
             //making sure we dont get an out of bounds error
-            if(inputBoard.MoveList.Count > 0)
+            if (inputBoard.MoveList.Count > 0)
             {
                 //checks if we're undoing a move from the move list.  If so, remove it from the move list
                 //and change the board situation (whose turn it is, is player in check, etc).
@@ -627,7 +677,7 @@ namespace ChessAttempt1
 
         //method to display a log of moves taken in the game
         private static void ShowLog(Board inputBoard)
-        {            
+        {
             Console.WriteLine("Game Log");
             //default if no moves taken
             if (inputBoard.MoveList.Count == 0)
@@ -635,7 +685,7 @@ namespace ChessAttempt1
                 Console.WriteLine("No moves have yet been played");
             }
             //loops through the move list
-            for ( int i = 0; i < inputBoard.MoveList.Count; i++ )
+            for (int i = 0; i < inputBoard.MoveList.Count; i++)
             {
                 //output modification for if the move created a "check" gamestate
                 string causingCheck = "";
@@ -645,7 +695,7 @@ namespace ChessAttempt1
                 }
                 //output modification for if the move captured an enemy piece
                 string capturingPiece = "";
-                if ( inputBoard.MoveList[i].WasTargetSquareEmpty == false || inputBoard.MoveList[i].SpecialCase == "en passant" )
+                if (inputBoard.MoveList[i].WasTargetSquareEmpty == false || inputBoard.MoveList[i].SpecialCase == "en passant")
                 {
                     capturingPiece = $" capturing {inputBoard.MoveList[i].CapturedPiece.PieceSymbol}";
                 }
@@ -892,7 +942,7 @@ namespace ChessAttempt1
                             //en passant check - confirms that the last move was a pawn double move to the square one to the left of our pawn
                             else if (inputBoard.BoardSquares[startingSquare].file != "a"
                                 && inputBoard.MoveList[inputBoard.MoveList.Count - 1].SpecialCase == "pawn double move"
-                                && inputBoard.MoveList[inputBoard.MoveList.Count - 1].TargetSquare == startingSquare - 1 )
+                                && inputBoard.MoveList[inputBoard.MoveList.Count - 1].TargetSquare == startingSquare - 1)
                             {
                                 return true;
                             }
@@ -1434,9 +1484,9 @@ namespace ChessAttempt1
         {
             //find square of king of proper color on board
             int kingSquare = -1;
-            for(int i = 0; i <= 63; i++)
+            for (int i = 0; i <= 63; i++)
             {
-                if(inputBoard.BoardSquares[i].hasPiece)
+                if (inputBoard.BoardSquares[i].hasPiece)
                 {
                     if (inputBoard.BoardSquares[i].occupyingPiece.IsWhitePiece == isWhiteKing
                         && inputBoard.BoardSquares[i].occupyingPiece.PieceName == "king")
@@ -1447,7 +1497,7 @@ namespace ChessAttempt1
 
             }
             //special case, if there is no king on the board of the proper color (should never happen) program will not crash
-            if(kingSquare == -1)
+            if (kingSquare == -1)
             {
                 return false;
             }
@@ -1536,23 +1586,20 @@ namespace ChessAttempt1
 }
 
 //rules not yet fully implemented
-    //end game 
-        //checking for no legal moves (stalemate or checkmate)
-            //if a player on his turn has no legal moves and is in check, they lose the game by checkmate
-            //if a player on his turn has no legal moves and is NOT in check, the game is a draw by stalemate
-        //checking for threefold repetition
-            //if the board would reach the same position for the 3rd (or more) time as a result of his move, a player may declare a draw
-                //castling rights and en passant rights are counted as different positions, but swapping identical piece positions does not.
-            //if the board has reached teh same position for the 3rd (or more) time as a result of the opponent's move, a player may declare a draw
-        //checking for "no pieces or pawn moves for 50 turns"
-            //at 50 moves for each side where no pieces were captured and no pawns were moved, instead of moving player may declare a draw
-                //technically they must be able to make a legal move that does not change the situation to be able to declare the draw
-                //the draw may be declared on any subsequent turn unless the a pawn has been moved or a piece captured
-            //at 75 moves for each side where no pieces were captured and no pawns were moved, game should automatically end in a draw
-        //resign
-            //at any time, a player may forefeit and lose the game
-        //offer draw
-            //at any time, a player may offer his oppnent a draw.  if his opponent accepts, the game is drawn
+//end game 
+//checking for threefold repetition
+//if the board would reach the same position for the 3rd (or more) time as a result of his move, a player may declare a draw
+//castling rights and en passant rights are counted as different positions, but swapping identical piece positions does not.
+//if the board has reached teh same position for the 3rd (or more) time as a result of the opponent's move, a player may declare a draw
+//checking for "no pieces or pawn moves for 50 turns"
+//at 50 moves for each side where no pieces were captured and no pawns were moved, instead of moving player may declare a draw
+//technically they must be able to make a legal move that does not change the situation to be able to declare the draw
+//the draw may be declared on any subsequent turn unless the a pawn has been moved or a piece captured
+//at 75 moves for each side where no pieces were captured and no pawns were moved, game should automatically end in a draw
+//resign
+//at any time, a player may forefeit and lose the game
+//offer draw
+//at any time, a player may offer his oppnent a draw.  if his opponent accepts, the game is drawn
 
 
 //possible alternative armies 
