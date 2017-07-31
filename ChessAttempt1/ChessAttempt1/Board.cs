@@ -17,6 +17,7 @@ namespace ChessAttempt1
         public bool blackInCheck { get; set; }
         public List<Move> MoveList { get; set; }
         public string SpecialCase { get; set; }
+        public int FiftyMoveRuleCounter { get; set; }
 
         //constructor with defaults
         public Board()
@@ -31,6 +32,7 @@ namespace ChessAttempt1
             blackInCheck = false;
             MoveList = new List<Move>();
             SpecialCase = "none";
+            FiftyMoveRuleCounter = 0;
         }
 
         internal void fillBoard(int whiteArmy, int blackArmy)

@@ -168,7 +168,7 @@ namespace ChessAttempt1
                     }
                     //special case, a player may offer a draw.  opponent gets an opportunity to accept, and if so, game ends in a draw.
                     else if (inputRow == "offer draw")
-                    {                        
+                    {
                         string offeringPlayer = "black";
                         string toAccept = "white";
                         if (inputBoard.isWhiteTurn)
@@ -278,11 +278,15 @@ namespace ChessAttempt1
                                         inputBoard.whiteInCheck = true;
                                     }
                                 }
+                                //cleanup for successful end of a turn
 
                                 //changes whose turn it is
                                 inputBoard.isWhiteTurn = !inputBoard.isWhiteTurn;
                                 //adds the new move to the list of moves on the board
                                 inputBoard.MoveList.Add(newMove);
+                                //update the board counter for the 50-move rule
+                                inputBoard.FiftyMoveRuleCounter = TurnsSincePawnMoveOrCapture(inputBoard);
+
                                 //redraws the board
                                 string outputMessage = $"moved {s1.occupyingPiece.PieceSymbol} from {s1.file}{s1.rank} to { s2.file}{ s2.rank}";
                                 //check for piece capture, add it to message
@@ -308,7 +312,11 @@ namespace ChessAttempt1
                                 {
                                     outputMessage = outputMessage + " by en passant";
                                 }
-
+                                //50-move rule implementation:  if FiftyMoveRuleCounter > 100, players may declare draw and end the game
+                                if (inputBoard.FiftyMoveRuleCounter > 5)
+                                {
+                                    outputMessage = outputMessage + ".  50 move rule invoked: players may now declare a draw on their turn.";
+                                }
                                 //adding a check for if the opponent has legal moves here.  will need to flesh this out,
                                 // just making sure it works for now
                                 //turn off the special case flag so it doesn't effect opponent move checks                                
@@ -355,6 +363,8 @@ namespace ChessAttempt1
                                 DrawBoard(inputBoard);
                                 //ends the loop for this turn
                                 turnInProgress = false;
+
+
                             }
                             //undo the move using the move object if the move would place or leave the king of the moving player in check
                             else
@@ -1582,6 +1592,40 @@ namespace ChessAttempt1
             //otherwise
             return false;
         }
+
+        //check the move list for the last pawn move or capture
+        //return an integer for how many turns ago such a move was made
+        //primarily used for endgame check - 50 turns with no pawn moves or captures
+        //note that since each move is looked at individually, 100 moves is necessary to invoke the 50-turn rule, and 150 to automatically end the game
+        //used in endgame check - threefold repetition.  by default, we don't have to go any farther back than this.
+        private static int TurnsSincePawnMoveOrCapture(Board inputBoard)
+        {
+            //makes there's at least one move
+            if (inputBoard.MoveList.Count > 0)
+            {
+                int moveCount = 0;
+                //loop through the list of moves backwards.  increment the movecount every time there was no capture or pawn move,
+                //and return the count if either took place or we reach the end of the move list
+                for (int i = inputBoard.MoveList.Count - 1; i >= 0; i--)
+                {
+                    if (inputBoard.MoveList[i].WasTargetSquareEmpty == false
+                        || inputBoard.MoveList[i].MovingPiece.PieceName == "pawn")
+                    {
+                        return moveCount;
+                    }
+                    moveCount++;
+                }
+                return moveCount;
+            }
+            return 0;
+        }
+
+        //check the rooks and king of the input color's starting positions 
+        //return an integer for the castling rights of both players, to be stored in the move object for use in threefold repetition checks.
+        private static int CastlingRights(Board inputBoard)
+        {
+            return 0;
+        }
     }
 }
 
@@ -1596,10 +1640,7 @@ namespace ChessAttempt1
 //technically they must be able to make a legal move that does not change the situation to be able to declare the draw
 //the draw may be declared on any subsequent turn unless the a pawn has been moved or a piece captured
 //at 75 moves for each side where no pieces were captured and no pawns were moved, game should automatically end in a draw
-//resign
-//at any time, a player may forefeit and lose the game
-//offer draw
-//at any time, a player may offer his oppnent a draw.  if his opponent accepts, the game is drawn
+
 
 
 //possible alternative armies 
