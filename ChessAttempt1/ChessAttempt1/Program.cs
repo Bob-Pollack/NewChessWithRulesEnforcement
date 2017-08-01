@@ -538,6 +538,8 @@ namespace ChessAttempt1
                     }
                 }
             }
+            //update the board state string based on current move state.
+            newMove.StateOfBoardAfterMove = StoreBoard(inputBoard);
 
             return newMove;
         }
@@ -796,6 +798,12 @@ namespace ChessAttempt1
             }
             //ends the line once we finish the final square
             Console.WriteLine();
+
+            //***TEST CODE: display the last move's boardstate string
+            if (inputBoard.MoveList.Count > 0)
+            {
+                Console.WriteLine(inputBoard.MoveList[inputBoard.MoveList.Count - 1].StateOfBoardAfterMove);
+            }
         }
 
         //returns whether the selected piece can move to the target square, ignoring threats to its own king
@@ -1645,14 +1653,14 @@ namespace ChessAttempt1
             {
                 if (inputBoard.BoardSquares[0].hasPiece)
                 {
-                    if (inputBoard.BoardSquares[0].occupyingPiece.HasMoved)
+                    if (inputBoard.BoardSquares[0].occupyingPiece.HasMoved == false)
                     {
                         moveState = moveState + 1;
                     }
                 }
                 if (inputBoard.BoardSquares[7].hasPiece)
                 {
-                    if (inputBoard.BoardSquares[7].occupyingPiece.HasMoved)
+                    if (inputBoard.BoardSquares[7].occupyingPiece.HasMoved == false)
                     {
                         moveState = moveState + 2;
                     }
@@ -1662,14 +1670,14 @@ namespace ChessAttempt1
             {
                 if (inputBoard.BoardSquares[56].hasPiece)
                 {
-                    if (inputBoard.BoardSquares[56].occupyingPiece.HasMoved)
+                    if (inputBoard.BoardSquares[56].occupyingPiece.HasMoved == false)
                     {
                         moveState = moveState + 4;
                     }
                 }
                 if (inputBoard.BoardSquares[63].hasPiece)
                 {
-                    if (inputBoard.BoardSquares[63].occupyingPiece.HasMoved)
+                    if (inputBoard.BoardSquares[63].occupyingPiece.HasMoved == false)
                     {
                         moveState = moveState + 8;
                     }
@@ -1679,6 +1687,94 @@ namespace ChessAttempt1
             //this should create output string, stored as hex notation for moveState.
             string outputString = moveState.ToString("X").ToLower();
             return outputString;
+        }
+
+        private static string StoreBoard(Board inputBoard)
+        {
+            string output = "";
+            //loop through board squares
+            for (int i = 0; i <= 63; i++)
+            {
+                
+                string additionalPiece = "";
+                if (inputBoard.BoardSquares[i].hasPiece)
+                {
+                    //update additionalPiece string to be a letter based on piece type
+                    if (inputBoard.BoardSquares[i].occupyingPiece.PieceName == "pawn")
+                    {
+                        additionalPiece = "p";
+                    }
+                    else if (inputBoard.BoardSquares[i].occupyingPiece.PieceName == "knight")
+                    {
+                        additionalPiece = "n";
+                    }
+                    else if (inputBoard.BoardSquares[i].occupyingPiece.PieceName == "bishop")
+                    {
+                        additionalPiece = "b";
+                    }
+                    else if (inputBoard.BoardSquares[i].occupyingPiece.PieceName == "rook")
+                    {
+                        additionalPiece = "r";
+                    }
+                    else if (inputBoard.BoardSquares[i].occupyingPiece.PieceName == "queen")
+                    {
+                        additionalPiece = "q";
+                    }
+                    else if (inputBoard.BoardSquares[i].occupyingPiece.PieceName == "king")
+                    {
+                        additionalPiece = "k";
+                    }
+                    //capitalize additionalPiece if the piece is white
+                    if (inputBoard.BoardSquares[i].occupyingPiece.IsWhitePiece)
+                    {
+                        additionalPiece = additionalPiece.ToUpper();
+                    }
+                    
+                }
+                else
+                {
+                    additionalPiece = "_";
+                    //modify this from a _ to a - if the square is a valid target for an en passant move
+                    if (inputBoard.MoveList.Count > 0)
+                    {
+                        if (inputBoard.MoveList[inputBoard.MoveList.Count - 1].SpecialCase == "pawn double move")
+                        {
+                            //we will be checking the square +8 from the current square to see if it contains the pawn that moved if it was black
+                            //if the last pawn to move was white, we instead check the square -8 from the current square.
+                            int squareModForCurrentPiece = 8;
+                            if (inputBoard.MoveList[inputBoard.MoveList.Count - 1].MovingPiece.IsWhitePiece)
+                            {
+                                squareModForCurrentPiece = -8;
+                            }
+                            //make sure we're still on the board
+                            if (i + squareModForCurrentPiece >= 0 && i + squareModForCurrentPiece <= 63)
+                            {
+                                //if the offset square has a piece on it
+                                if (inputBoard.BoardSquares[i + squareModForCurrentPiece].hasPiece)
+                                {
+                                    //compare the piece on the square offset from our current "i" square to the most recently moved piece.  
+                                    //if they match, the current "i" square is a valid target for en passant and will be marked with a - instead of a _
+                                    //this will be treated as a different board state for the purposes of threefold repetition.
+                                    if (inputBoard.BoardSquares[i + squareModForCurrentPiece].occupyingPiece
+                                        == inputBoard.MoveList[inputBoard.MoveList.Count - 1].MovingPiece)
+                                    {
+                                        additionalPiece = "-";
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                //add the additionalPiece string's character to the end of our output string
+                output = output + additionalPiece;
+            }
+            //now that we have the 64 digits of the board itself, we need to add another character for castling rights.
+            string castlingRightsCharacter = "";
+            castlingRightsCharacter = CastlingRights(inputBoard);
+
+            output = output + castlingRightsCharacter;
+
+            return output;
         }
     }
 }

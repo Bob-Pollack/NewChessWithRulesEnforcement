@@ -28,5 +28,6 @@ namespace ChessAttempt1
         public bool Check { get; set; }
         public string SpecialCase { get; set; }
         public Piece NewPiece { get; set; }
+        public string StateOfBoardAfterMove { get; set; }
     }
 }
