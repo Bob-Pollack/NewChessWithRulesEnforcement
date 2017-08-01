@@ -1638,9 +1638,9 @@ namespace ChessAttempt1
             //+1 for black left rook, +2 for black right rook, +4 for white left rook, +8 for white right rook.
             int moveState = 0;
             //check for pieces at the king starting locations, then check their has moved states.
-            bool hasWhiteKingMoved = false;
-            bool hasBlackKingMoved = false;
-            if (inputBoard.BoardSquares[5].hasPiece)
+            bool hasWhiteKingMoved = true;
+            bool hasBlackKingMoved = true;
+            if (inputBoard.BoardSquares[4].hasPiece)
             {
                 hasBlackKingMoved = inputBoard.BoardSquares[5].occupyingPiece.HasMoved;
             }
