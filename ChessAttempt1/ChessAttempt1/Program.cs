@@ -539,7 +539,7 @@ namespace ChessAttempt1
                 }
             }
             //update the board state string based on current move state.
-            newMove.StateOfBoardAfterMove = StoreBoard(inputBoard);
+            newMove.StateOfBoardAfterMove = StoreBoard(inputBoard, targetSquare);
 
             return newMove;
         }
@@ -1689,13 +1689,13 @@ namespace ChessAttempt1
             return outputString;
         }
 
-        private static string StoreBoard(Board inputBoard)
+        private static string StoreBoard(Board inputBoard, int targetSquare)
         {
             string output = "";
             //loop through board squares
             for (int i = 0; i <= 63; i++)
             {
-                
+
                 string additionalPiece = "";
                 if (inputBoard.BoardSquares[i].hasPiece)
                 {
@@ -1729,41 +1729,39 @@ namespace ChessAttempt1
                     {
                         additionalPiece = additionalPiece.ToUpper();
                     }
-                    
+
                 }
                 else
                 {
                     additionalPiece = "_";
                     //modify this from a _ to a - if the square is a valid target for an en passant move
-                    if (inputBoard.MoveList.Count > 0)
+                    //if we're currently making a pawn double move
+                    if (inputBoard.SpecialCase == "pawn double move")
                     {
-                        if (inputBoard.MoveList[inputBoard.MoveList.Count - 1].SpecialCase == "pawn double move")
+                        //we will be checking the square +8 from the current square to see if it contains the pawn that moved if it was black
+                        //if logging white's move we instead check the square -8 from the current square.
+                        int squareModForCurrentPiece = 8;
+                        if (inputBoard.isWhiteTurn)
                         {
-                            //we will be checking the square +8 from the current square to see if it contains the pawn that moved if it was black
-                            //if the last pawn to move was white, we instead check the square -8 from the current square.
-                            int squareModForCurrentPiece = 8;
-                            if (inputBoard.MoveList[inputBoard.MoveList.Count - 1].MovingPiece.IsWhitePiece)
+                            squareModForCurrentPiece = -8;
+                        }
+                        //make sure we're still on the board
+                        if (i + squareModForCurrentPiece >= 0 && i + squareModForCurrentPiece <= 63)
+                        {
+                            //if the offset square has a piece on it
+                            if (inputBoard.BoardSquares[i + squareModForCurrentPiece].hasPiece)
                             {
-                                squareModForCurrentPiece = -8;
-                            }
-                            //make sure we're still on the board
-                            if (i + squareModForCurrentPiece >= 0 && i + squareModForCurrentPiece <= 63)
-                            {
-                                //if the offset square has a piece on it
-                                if (inputBoard.BoardSquares[i + squareModForCurrentPiece].hasPiece)
+                                //compare i + squareMod to the targetSquare.  
+                                //if they match, the current "i" square is a valid target for en passant and will be marked with a - instead of a _
+                                //this will be treated as a different board state for the purposes of threefold repetition.
+                                if (i + squareModForCurrentPiece == targetSquare)
                                 {
-                                    //compare the piece on the square offset from our current "i" square to the most recently moved piece.  
-                                    //if they match, the current "i" square is a valid target for en passant and will be marked with a - instead of a _
-                                    //this will be treated as a different board state for the purposes of threefold repetition.
-                                    if (inputBoard.BoardSquares[i + squareModForCurrentPiece].occupyingPiece
-                                        == inputBoard.MoveList[inputBoard.MoveList.Count - 1].MovingPiece)
-                                    {
-                                        additionalPiece = "-";
-                                    }
+                                    additionalPiece = "-";
                                 }
                             }
                         }
                     }
+
                 }
                 //add the additionalPiece string's character to the end of our output string
                 output = output + additionalPiece;
