@@ -1623,10 +1623,62 @@ namespace ChessAttempt1
         }
 
         //check the rooks and king of the input color's starting positions 
-        //return an integer for the castling rights of both players, to be stored in the move object for use in threefold repetition checks.
-        private static int CastlingRights(Board inputBoard)
+        //return an char for the castling rights of both players, to be stored in the move object for use in threefold repetition checks.
+        private static string CastlingRights(Board inputBoard)
         {
-            return 0;
+            //moveState stores castling rights of the players.  0 = no castling rights,
+            //+1 for black left rook, +2 for black right rook, +4 for white left rook, +8 for white right rook.
+            int moveState = 0;
+            //check for pieces at the king starting locations, then check their has moved states.
+            bool hasWhiteKingMoved = false;
+            bool hasBlackKingMoved = false;
+            if (inputBoard.BoardSquares[5].hasPiece)
+            {
+                hasBlackKingMoved = inputBoard.BoardSquares[5].occupyingPiece.HasMoved;
+            }
+            if (inputBoard.BoardSquares[60].hasPiece)
+            {
+                hasWhiteKingMoved = inputBoard.BoardSquares[60].occupyingPiece.HasMoved;
+            }
+            //assuming a king has not moved, check its rook starting locations.  increment moveState based on these.
+            if (hasBlackKingMoved == false)
+            {
+                if (inputBoard.BoardSquares[0].hasPiece)
+                {
+                    if (inputBoard.BoardSquares[0].occupyingPiece.HasMoved)
+                    {
+                        moveState = moveState + 1;
+                    }
+                }
+                if (inputBoard.BoardSquares[7].hasPiece)
+                {
+                    if (inputBoard.BoardSquares[7].occupyingPiece.HasMoved)
+                    {
+                        moveState = moveState + 2;
+                    }
+                }
+            }
+            if (hasWhiteKingMoved == false)
+            {
+                if (inputBoard.BoardSquares[56].hasPiece)
+                {
+                    if (inputBoard.BoardSquares[56].occupyingPiece.HasMoved)
+                    {
+                        moveState = moveState + 4;
+                    }
+                }
+                if (inputBoard.BoardSquares[63].hasPiece)
+                {
+                    if (inputBoard.BoardSquares[63].occupyingPiece.HasMoved)
+                    {
+                        moveState = moveState + 8;
+                    }
+                }
+            }
+
+            //this should create output string, stored as hex notation for moveState.
+            string outputString = moveState.ToString("X").ToLower();
+            return outputString;
         }
     }
 }
@@ -1643,7 +1695,18 @@ namespace ChessAttempt1
 //the draw may be declared on any subsequent turn unless the a pawn has been moved or a piece captured
 //at 75 moves for each side where no pieces were captured and no pawns were moved, game should automatically end in a draw
 
-
+//thoughts for implementing threefold repetition.
+//clearly some method of storing the state of the board will be necessary, despite my hopes to avoid it and designing everything up to this point
+//to avoid doing so.
+//current option: store everything as a string, with p, n, b, k, q, r for black pieces, capital letters for white pieces, and _ for blank squares.
+//string could use a - to indicate a square that a pawn can move into for en passant, for the sake of storing information more simply.
+//add an additional character at the end to indicate castling rights.  there are 4 bits of information to be stored, so this could be returned as a 
+//single digit in hex for each option.  
+//either as part of the string or as an additional piece of the move object,  store how many times this board configuration has occurred?
+//after we have a check for "has the board been in the current state 3 times" for that draw option, we additionally will need a check for
+//can a legal move be made that puts us into threefold repetition and include the draw option for that.
+//this may require updating the legal move check function, or creating a modified version that checks all legal moves
+//for potentially matching board states.
 
 //possible alternative armies 
 //spider - pawns can move sideways if on the same square as their army color.  queen moves only 2 spaces but kills the attacking piece when captured
