@@ -167,7 +167,7 @@ namespace ChessAttempt1
                         inputBoard.winMessage = $"{resigningPlayer} resigns.  {winningPlayer} wins!";
                     }
                     //special case, a player may offer a draw.  opponent gets an opportunity to accept, and if so, game ends in a draw.
-                    else if (inputRow == "offer draw")
+                    else if (inputRow == "draw")
                     {
                         string offeringPlayer = "black";
                         string toAccept = "white";
@@ -176,21 +176,48 @@ namespace ChessAttempt1
                             offeringPlayer = "white";
                             toAccept = "black";
                         }
-                        //write out draw offer, then get user input.  if first character of user input is "y", draw accepted
-                        Console.WriteLine($"{offeringPlayer} offers a draw.  {toAccept} do you accept the draw?  y/n");
-                        string drawReply = Console.ReadLine().ToLower();
-                        //make sure blank input doesn't crash anything
-                        if (drawReply != "")
+                        //check for threefold repetition, either in current board state or as a result of a possible move
+                        //if so, update the game to be over and update the win message.
+                        //***not yet implemented
+                        bool threefoldCheck = false;
+                        //check for the fifty move rule being active.  If it has been more than 100 moves (50 by each player)
+                        //since either player moved a pawn or captured a piece, then the game can be declared a draw.
+                        bool fiftyMoveCheck = false;
+                        int moveCheck = TurnsSincePawnMoveOrCapture(inputBoard);
+                        fiftyMoveCheck = (moveCheck > 100);
+                        
+                        //if threfoldcheck is true, end the game
+                        if (threefoldCheck)
                         {
-                            if (drawReply[0] == 'y')
+                            goodInput = true;
+                            inputBoard.isGameOver = true;
+                            inputBoard.winMessage = $"{offeringPlayer} declares a draw by threefold repetition.";
+                        }
+                        //if fiftyMoveCheck is true, end the game
+                        else if (fiftyMoveCheck)
+                        {
+                            goodInput = true;
+                            inputBoard.isGameOver = true;
+                            inputBoard.winMessage = $"{offeringPlayer} declares a draw by invoking the 50 moves without a capture or pawn move rule.";
+                        }
+                        else
+                        {
+                            //write out draw offer, then get user input.  if first character of user input is "y", draw accepted
+                            Console.WriteLine($"{offeringPlayer} offers a draw.  {toAccept} do you accept the draw?  y/n");
+                            string drawReply = Console.ReadLine().ToLower();
+                            //make sure blank input doesn't crash anything
+                            if (drawReply != "")
                             {
-                                goodInput = true;
-                                inputBoard.isGameOver = true;
-                                inputBoard.winMessage = $"{offeringPlayer} offered a draw and was accepted.";
-                            }
-                            else
-                            {
-                                Console.WriteLine($"{toAccept} declined the draw, resuming game");
+                                if (drawReply[0] == 'y')
+                                {
+                                    goodInput = true;
+                                    inputBoard.isGameOver = true;
+                                    inputBoard.winMessage = $"{offeringPlayer} offered a draw and was accepted.";
+                                }
+                                else
+                                {
+                                    Console.WriteLine($"{toAccept} declined the draw, resuming game");
+                                }
                             }
                         }
                     }
