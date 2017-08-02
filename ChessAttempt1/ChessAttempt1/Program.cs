@@ -178,8 +178,13 @@ namespace ChessAttempt1
                         }
                         //check for threefold repetition, either in current board state or as a result of a possible move
                         //if so, update the game to be over and update the win message.
-                        //***not yet implemented
+                        //***not yet  fully implemented - need to check if the player can make a move that triggers threefold repetition
+                        //***in addition to checking the current state of the board.
                         bool threefoldCheck = false;
+                        if (ThreefoldRepetitionCurrent(inputBoard))
+                        {
+                            threefoldCheck = true;
+                        }
                         //check for the fifty move rule being active.  If it has been more than 100 moves (50 by each player)
                         //since either player moved a pawn or captured a piece, then the game can be declared a draw.
                         bool fiftyMoveCheck = false;
@@ -342,12 +347,18 @@ namespace ChessAttempt1
                                 //50-move rule implementation:  if FiftyMoveRuleCounter > 100, players may declare draw and end the game
                                 if (inputBoard.FiftyMoveRuleCounter > 100)
                                 {
-                                    outputMessage = outputMessage + ".  50 move rule invoked: players may now declare a draw on their turn.";
-                                    //***incomplete: need to update the turn's user input to trigger a draw in this case
-                                    //***incomplete: need to add instead a game ending message here and trigger automatic game end if the counter passes 150.
+                                    outputMessage = outputMessage + ".  50 move rule invoked: players may now declare a draw on their turn.";                                    
                                 }
-                                //adding a check for if the opponent has legal moves here.  will need to flesh this out,
-                                // just making sure it works for now
+                                //threefold repetition implementation: if the current board state has been seen twice before, inform the 
+                                //player that he may declare a draw.
+                                //***unfinished: inform the player if he can make a move that would put the board into threefold repetition, if so he may declare a draw.
+                                if (ThreefoldRepetitionCurrent(inputBoard))
+                                {
+                                    outputMessage = outputMessage + ".  This position has been repeated at least three times, player may now declare a draw.";
+                                }
+
+                                //check if opponent has a legal move.  if not, game ends either in checkmate or stalemate.
+
                                 //turn off the special case flag so it doesn't effect opponent move checks                                
                                 inputBoard.SpecialCase = "none";
                                 bool opponentCanMove = true;
@@ -383,6 +394,12 @@ namespace ChessAttempt1
                                     }
                                     //set the flag for the loop to end because the game is now over
                                     inputBoard.isGameOver = true;
+                                }
+                                //after checking for stalemate or checkmate, check for 75-move auto-draw
+                                else if (inputBoard.FiftyMoveRuleCounter >= 150)
+                                {
+                                    inputBoard.isGameOver = true;
+                                    inputBoard.winMessage = "75 moves have passed for each player without a pawn move or a capture.  The game is declared a draw.";
                                 }
 
                                 //end addition
@@ -1801,6 +1818,50 @@ namespace ChessAttempt1
 
             return output;
         }
+
+        //threefold repetition checker
+        //determines if the current state of the board has happened at least twice.
+        private static bool ThreefoldRepetitionCurrent(Board inputBoard)
+        {
+            //by inputting a negative number, we guarantee no inadvertent en passant rule trigger. 
+            //if en passant were possible this turn, TurnsSincePawnMoveOrCapture would be 0, thus leaving the result guaranteed false.
+            string currentBoardStateString = StoreBoard(inputBoard, -1);
+            int numberOfRepeats = 0;
+            int countdownCheck = TurnsSincePawnMoveOrCapture(inputBoard);
+            //its not possible for the current board state to be the 3rd time if less than 4 moves have been made since the last capture or pawn move
+            if (countdownCheck < 4)
+            { return false; }
+            else
+            {
+                //check two more than the countdowncheck variable
+                //countdown is how many moves since the last relevant move.  the last move should match the current board state
+                //so we need to look back one farther.  we must then go back one farther than that because
+                //the move that was the capture  or pawn move counts for threefold repetition.
+                for (int i = 0; i <= countdownCheck + 1; i++)
+                {
+                    string moveStateString = "";
+                    //make sure we don't go off the move list entirely, since the starting state of the board is not kept there.
+                    //**now that I think about it, technically we can't invoke threefold repetition by just moving knights 
+                    //until move 18 (9 each) instead of 16 (8 each) as a result.  may look into this later, and store the starting position as a move.
+                    if (inputBoard.MoveList.Count - 1 - i >= 0)
+                    {
+                        moveStateString = inputBoard.MoveList[inputBoard.MoveList.Count - 1 - i].StateOfBoardAfterMove;
+                    }
+                    if (currentBoardStateString == moveStateString)
+                    {
+                        numberOfRepeats++;
+                    }
+                }
+                if (numberOfRepeats >= 3)
+                {
+                    return true;
+                }
+            }
+
+
+            return false;
+        }
+
     }
 }
 
